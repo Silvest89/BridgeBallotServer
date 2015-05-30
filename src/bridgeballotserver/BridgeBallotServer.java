@@ -19,7 +19,7 @@ public class BridgeBallotServer extends Thread {
     private boolean running = false;
 
     public BridgeBallotServer(int port) {
-        this.port = 1337;
+        this.port = port;
     }
 
     public void startServer() {
@@ -39,6 +39,7 @@ public class BridgeBallotServer extends Thread {
     @Override
     public void run() {
         running = true;
+        Database.getDataSource();
         while (running) {
             try {
                 System.out.println("Listening for a connection");
@@ -57,12 +58,12 @@ public class BridgeBallotServer extends Thread {
 
     public static void main(String[] args) {
         /*
-        if (args.length == 0) {
-            System.out.println("Usage: SimpleSocketServer <port>");
-            System.exit(0);
-        }
-        */
-        int port = 1337;
+         if (args.length == 0) {
+         System.out.println("Usage: SimpleSocketServer <port>");
+         System.exit(0);
+         }
+         */
+        int port = 21;
         System.out.println("Start server on port: " + port);
 
         BridgeBallotServer server = new BridgeBallotServer(port);
@@ -70,14 +71,14 @@ public class BridgeBallotServer extends Thread {
 
         // Automatically shutdown in 1 minute
         /*
-        try {
-            Thread.sleep(60000);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+         try {
+         Thread.sleep(60000);
+         } catch (Exception e) {
+         e.printStackTrace();
+         }
     
-        server.stopServer();
-                */
+         server.stopServer();
+         */
     }
 }
 
@@ -102,8 +103,32 @@ class RequestHandler extends Thread {
             out.println("Echo Server 1.0");
             out.flush();
 
-            // Echo lines back to the client until the client closes the connection or we receive an empty line
             String line = in.readLine();
+
+            switch (line) {
+                case "LOGIN":
+                    String username = "";
+                    String password = "";
+                    int counter = 0;
+                    while ((line = in.readLine()) != null) {
+                        if (counter == 0) {
+                            username = line;
+                        } else if (counter == 1) {
+                            password = line;
+                        }
+                        counter++;
+                    }
+
+                    boolean correctLogin = new Database().validateLogin(username, password);
+
+                    if (correctLogin) {
+                        System.out.println("Access granted");
+                    } else {
+                        System.out.println("Access refused");
+                    }
+                break;
+
+            }
 
             // Close our connection
             in.close();
@@ -115,4 +140,5 @@ class RequestHandler extends Thread {
             e.printStackTrace();
         }
     }
+
 }
