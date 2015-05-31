@@ -15,12 +15,6 @@ import java.net.Socket;
 public class BridgeBallotServer {
 
     public static void main(String[] args) {
-        /*
-         if (args.length == 0) {
-         System.out.println("Usage: SimpleSocketServer <port>");
-         System.exit(0);
-         }
-         */
         int port = 21;
 
         Protocol server = new Protocol(port);

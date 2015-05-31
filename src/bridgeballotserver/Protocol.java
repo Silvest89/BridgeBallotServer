@@ -58,7 +58,7 @@ class RequestHandler extends Thread {
     public final static class MessageType {
         public static final int LOGIN = 0;
         public static final int ADD_BRIDGE = 1;
-        public static final int CLOSE_CONNECTION = 2;
+        public static final int DISCONNECT = 2;
     }
 
     public final static class ReturnType {
@@ -88,24 +88,26 @@ class RequestHandler extends Thread {
                         parseLogin(in, out);
                         break;
                     }
+                    case MessageType.DISCONNECT:{
+                        socket.close();
+                        break;
+                    }
+                    default: {
+                        in.close();
+                        out.close();
+                        socket.close();
+                        break;
+                    }
 
                 }
-
-                // Close our connection
-                in.close();
-                out.close();
-                //socket.close();
-
-                System.out.println("Connection closed");
             } catch (Exception e) {
                 e.printStackTrace();
             }
     }
 
     public void parseLogin(ObjectInputStream in, ObjectOutputStream out) throws Exception{
-        String[] loginDetails = new String[2];
-        loginDetails = (String[]) in.readObject();
-        System.out.println(loginDetails);
+        String[] loginDetails = (String[]) in.readObject();
+        System.out.println(loginDetails[0] + " " + loginDetails[1]);
         boolean correctLogin = new Database().validateLogin(loginDetails[0], loginDetails[1]);
 
         if (correctLogin) {
