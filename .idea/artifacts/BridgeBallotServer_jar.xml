@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="BridgeBallotServer:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/BridgeBallotServer_jar</output-path>
+    <root id="archive" name="BridgeBallotServer.jar">
+      <element id="module-output" name="BridgeBallotServer" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/store/BridgeBallotServer.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
