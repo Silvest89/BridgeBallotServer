@@ -59,6 +59,7 @@ class RequestHandler extends Thread {
         public static final int LOGIN = 0;
         public static final int ADD_BRIDGE = 1;
         public static final int DISCONNECT = 2;
+        public static final int RECEIVE_TOKEN = 3;
     }
 
     public final static class ReturnType {
@@ -92,6 +93,11 @@ class RequestHandler extends Thread {
                         socket.close();
                         break;
                     }
+                    case MessageType.RECEIVE_TOKEN:{
+                        handleToken(in, out);
+                        socket.close();
+                        
+                    }
                     default: {
                         in.close();
                         out.close();
@@ -117,5 +123,10 @@ class RequestHandler extends Thread {
         }
         out.flush();
 
+    }
+    
+    public void handleToken(ObjectInputStream in, ObjectOutputStream out) throws Exception{
+        String token = (String) in.readUTF();
+        System.out.println(token);
     }
 }
