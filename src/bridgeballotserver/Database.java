@@ -51,4 +51,25 @@ public class Database {
         
         return false;        
     }
+    
+    public ArrayList requestBridgeList(){
+    	try {
+            preparedStatement = connect.prepareStatement("SELECT * FROM bridges");
+            resultSet = preparedStatement.executeQuery();
+            ArrayList<String[]> bridgeList = new ArrayList();
+            while(resultSet.next()){
+            	String[] bridge = new String[5];
+            	bridge[0] = resultSet.getInt("id").toString();
+            	bridge[1] = resultSet.getString("name");
+            	bridge[2] = resultSet.getString("location");
+            	bridge[3] = resultSet.getString("latitude");
+            	bridge[4] = resultSet.getString("longitude");
+            	bridgeList.add(bridge);
+            	
+            }
+            return bridgeList;
+        } catch (SQLException e){
+            e.printStackTrace();
+        }	
+    }
 }

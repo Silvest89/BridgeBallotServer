@@ -57,9 +57,11 @@ class RequestHandler extends Thread {
 
     public final static class MessageType {
         public static final int LOGIN = 0;
-        public static final int ADD_BRIDGE = 1;
-        public static final int DISCONNECT = 2;
-        public static final int RECEIVE_TOKEN = 3;
+        public static final int DISCONNECT = 1;
+        public static final int SEND_TOKEN = 2;
+        public static final int BRIDGE_REQUEST = 3;
+        public static final int BRIDGE_ADD = 4;
+        public static final int BRIDGE_DELETE = 5;
     }
 
     public final static class ReturnType {
@@ -95,8 +97,12 @@ class RequestHandler extends Thread {
                     }
                     case MessageType.RECEIVE_TOKEN:{
                         handleToken(in, out);
-                        socket.close();
-                        
+                        socket.close();  
+                    }
+                    case MessageType.BRIDGE_REQUEST: {
+                    	parseBridgeRequest(in,out);
+                    	socket.close();
+                    	break;
                     }
                     default: {
                         in.close();
@@ -128,5 +134,12 @@ class RequestHandler extends Thread {
     public void handleToken(ObjectInputStream in, ObjectOutputStream out) throws Exception{
         String token = (String) in.readUTF();
         System.out.println(token);
+    }
+    
+    public void parseBridgeRequest(ObjectInputStream in, ObjectOutputStream out) throws Exception{
+        ArrayList bridgeList = new Database().requestBridgeList();
+        out.writeObject(bridgeList);
+        out.flush();
+
     }
 }
