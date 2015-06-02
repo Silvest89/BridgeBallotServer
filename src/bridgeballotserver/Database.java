@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import javax.sql.DataSource;
 
 /**
@@ -59,17 +60,18 @@ public class Database {
             ArrayList<String[]> bridgeList = new ArrayList();
             while(resultSet.next()){
             	String[] bridge = new String[5];
-            	bridge[0] = resultSet.getInt("id").toString();
+            	bridge[0] = Integer.toString(resultSet.getInt("id"));
             	bridge[1] = resultSet.getString("name");
             	bridge[2] = resultSet.getString("location");
             	bridge[3] = resultSet.getString("latitude");
             	bridge[4] = resultSet.getString("longitude");
             	bridgeList.add(bridge);
-            	
+            	            return bridgeList;
             }
-            return bridgeList;
+
         } catch (SQLException e){
             e.printStackTrace();
-        }	
+        }   
+        return null;
     }
 }

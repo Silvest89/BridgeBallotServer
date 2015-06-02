@@ -3,6 +3,7 @@ package bridgeballotserver;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * Created by Johnnie Ho on 31-5-2015.
@@ -58,7 +59,7 @@ class RequestHandler extends Thread {
     public final static class MessageType {
         public static final int LOGIN = 0;
         public static final int DISCONNECT = 1;
-        public static final int SEND_TOKEN = 2;
+        public static final int RECEIVE_TOKEN = 2;
         public static final int BRIDGE_REQUEST = 3;
         public static final int BRIDGE_ADD = 4;
         public static final int BRIDGE_DELETE = 5;
@@ -98,6 +99,7 @@ class RequestHandler extends Thread {
                     case MessageType.RECEIVE_TOKEN:{
                         handleToken(in, out);
                         socket.close();  
+                        break;
                     }
                     case MessageType.BRIDGE_REQUEST: {
                     	parseBridgeRequest(in,out);
