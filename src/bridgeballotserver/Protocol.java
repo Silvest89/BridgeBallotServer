@@ -3,6 +3,7 @@ package bridgeballotserver;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * Created by Johnnie Ho on 31-5-2015.
@@ -95,7 +96,7 @@ class RequestHandler extends Thread {
                         socket.close();
                         break;
                     }
-                    case MessageType.RECEIVE_TOKEN:{
+                    case MessageType.SEND_TOKEN:{
                         handleToken(in, out);
                         socket.close();  
                     }
@@ -137,7 +138,7 @@ class RequestHandler extends Thread {
     }
     
     public void parseBridgeRequest(ObjectInputStream in, ObjectOutputStream out) throws Exception{
-        ArrayList bridgeList = new Database().requestBridgeList();
+        ArrayList<String[]> bridgeList = new Database().requestBridgeList();
         out.writeObject(bridgeList);
         out.flush();
 
