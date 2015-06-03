@@ -53,6 +53,32 @@ public class Database {
         return false;        
     }
     
+    public boolean checkUserName(String userName){
+        try {
+            preparedStatement = connect.prepareStatement("SELECT user_name FROM account WHERE user_name = ?");
+            preparedStatement.setString(1, userName);
+            resultSet = preparedStatement.executeQuery();
+            
+            return resultSet.next();
+            
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+        return false;
+        
+    }
+    
+    public void createAccount(String userName, String password){
+        try {
+            preparedStatement = connect.prepareStatement("INSERT INTO account(user_name, password) VALUES (?, ?)");
+            preparedStatement.setString(1, userName);
+            preparedStatement.setString(2, password);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+    
     public ArrayList requestBridgeList(){
     	try {
             preparedStatement = connect.prepareStatement("SELECT * FROM bridges");
@@ -66,11 +92,13 @@ public class Database {
             	bridge[3] = resultSet.getString("latitude");
             	bridge[4] = resultSet.getString("longitude");
             	bridgeList.add(bridge);
+            	            
             }
             return bridgeList;
+
         } catch (SQLException e){
             e.printStackTrace();
-        }
+        }   
         return null;
     }
 }

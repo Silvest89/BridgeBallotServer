@@ -4,6 +4,10 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+//import com.google.android.gcm.server.Message;
+//import com.google.android.gcm.server.MulticastResult;
+//import com.google.android.gcm.server.Result;
+//import com.google.android.gcm.server.Sender;
 
 /**
  * Created by Johnnie Ho on 31-5-2015.
@@ -18,6 +22,8 @@ public class Protocol extends Thread {
         this.port = port;
     }
 
+
+    
     @Override
     public void run() {
         running = true;
@@ -25,7 +31,7 @@ public class Protocol extends Thread {
         while (running) {
             try {
                 System.out.println("Listening for a connection");
-
+                
                 // Call accept() to receive the next connection
                 Socket socket = serverSocket.accept();
 
@@ -38,11 +44,12 @@ public class Protocol extends Thread {
         }
     }
 
-    public void startServer() {
+    public void startServer(){
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Starting server on port: " + port);
-            this.start();
+            //this.sendNotification();
+            this.start();      
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -52,6 +59,26 @@ public class Protocol extends Thread {
         running = false;
         this.interrupt();
     }
+ /*public void sendNotification() throws Exception {
+         new Thread();
+        
+        String gcmToken = "c4rV3k7JJ9k:APA91bE1g7rr5abmT9LHlhxS66Ss7n6MPN9VEdEYjaSP_Gah2S2oN8ehRXxcPTCQg7UB-7oLU9KUZbbTwaJ-d-DroHDN2GHGo4W9g1PU_VlxUlNIJyJ7GX7W4X09X2RsBeFVVvDIIh6e";
+        String NotificationMessage = "Test Notification"; 
+ 
+        Message message = new Message.Builder()
+                .collapseKey("message")
+                .timeToLive(3)
+                .delayWhileIdle(true)
+                .addData("message", NotificationMessage)
+                .build();
+ 
+
+                        Sender sender = new Sender("AIzaSyArlED8QXpO6XjvRUv_0JNis8fkWHHvd_k");
+
+        Result result  = sender.send(message, gcmToken, 1);
+        
+        System.out.println("Message Result: "+result.toString());
+    }*/
 }
 
 class RequestHandler extends Thread {
@@ -59,15 +86,18 @@ class RequestHandler extends Thread {
     public final static class MessageType {
         public static final int LOGIN = 0;
         public static final int DISCONNECT = 1;
-        public static final int SEND_TOKEN = 2;
+        public static final int RECEIVE_TOKEN = 2;
         public static final int BRIDGE_REQUEST = 3;
         public static final int BRIDGE_ADD = 4;
         public static final int BRIDGE_DELETE = 5;
+        public static final int SEND_NOTIFICATION = 6;
+        public static final int CREATE_ACCOUNT = 7;
     }
 
     public final static class ReturnType {
         public static final int SUCCESS = 0;
         public static final int FAILURE = 1;
+        public static final int FAILURE_NAME_NOT_UNIQUE = 2;
     }
 
     private Socket socket;
@@ -75,6 +105,7 @@ class RequestHandler extends Thread {
     RequestHandler(Socket socket) {
         this.socket = socket;
     }
+    
 
     @Override
     public void run() {
@@ -87,6 +118,7 @@ class RequestHandler extends Thread {
                 out.flush();
                 int line = in.readInt();
                 System.out.println("Test1:" + line);
+
                 switch (line) {
                     case MessageType.LOGIN: {
                         parseLogin(in, out);
@@ -96,14 +128,21 @@ class RequestHandler extends Thread {
                         socket.close();
                         break;
                     }
-                    case MessageType.SEND_TOKEN:{
+                    case MessageType.RECEIVE_TOKEN:{
                         handleToken(in, out);
                         socket.close();  
+                        break;
                     }
                     case MessageType.BRIDGE_REQUEST: {
                     	parseBridgeRequest(in,out);
                     	socket.close();
                     	break;
+                    }
+                    
+                    case MessageType.CREATE_ACCOUNT: {
+                        createAccount(in, out);
+                        socket.close();
+                        break;
                     }
                     default: {
                         in.close();
@@ -111,7 +150,6 @@ class RequestHandler extends Thread {
                         socket.close();
                         break;
                     }
-
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -132,15 +170,36 @@ class RequestHandler extends Thread {
 
     }
     
+    public void createAccount(ObjectInputStream in, ObjectOutputStream out) throws Exception{
+        Database d = new Database();
+        String[] loginDetails = (String[]) in.readObject();
+        System.out.println(loginDetails[0] + " " + loginDetails[1]);
+        boolean exists = d.checkUserName(loginDetails[0]);
+
+        if (!exists) {
+            d.createAccount(loginDetails[0], loginDetails[1]);
+            out.writeInt(ReturnType.SUCCESS);
+        }
+            
+        else {
+            out.writeInt(ReturnType.FAILURE_NAME_NOT_UNIQUE);
+        }
+        
+        out.flush();
+        
+    }
+    
     public void handleToken(ObjectInputStream in, ObjectOutputStream out) throws Exception{
         String token = (String) in.readUTF();
         System.out.println(token);
     }
     
+    
+    
+    
     public void parseBridgeRequest(ObjectInputStream in, ObjectOutputStream out) throws Exception{
-        ArrayList<String[]> bridgeList = new Database().requestBridgeList();
+        ArrayList bridgeList = new Database().requestBridgeList();
         out.writeObject(bridgeList);
         out.flush();
-
     }
 }
