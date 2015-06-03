@@ -79,7 +79,7 @@ public class Database {
         }
     }
     
-    public ArrayList requestBridgeList(){
+    public ArrayList<String[]> requestBridgeList(){
     	try {
             preparedStatement = connect.prepareStatement("SELECT * FROM bridges");
             resultSet = preparedStatement.executeQuery();
@@ -87,10 +87,12 @@ public class Database {
             while(resultSet.next()){
             	String[] bridge = new String[5];
             	bridge[0] = Integer.toString(resultSet.getInt("id"));
-            	bridge[1] = resultSet.getString("name");
-            	bridge[2] = resultSet.getString("location");
-            	bridge[3] = resultSet.getString("latitude");
-            	bridge[4] = resultSet.getString("longitude");
+                String name = resultSet.getString("name");
+            	bridge[1] = name;
+            	//bridge[2] = resultSet.getString("location");
+            	//bridge[3] = resultSet.getString("latitude");
+            	//bridge[4] = resultSet.getString("longitude");
+
             	bridgeList.add(bridge);
             	            
             }

@@ -135,8 +135,10 @@ class RequestHandler extends Thread {
                         break;
                     }
                     case MessageType.BRIDGE_REQUEST: {
+                        System.out.println("Parse bridge request.");
                     	parseBridgeRequest(in,out);
-                    	socket.close();
+                        System.out.println("Closing socket");
+                    	//socket.close();
                     	break;
                     }
                     
@@ -199,7 +201,8 @@ class RequestHandler extends Thread {
     
     
     public void parseBridgeRequest(ObjectInputStream in, ObjectOutputStream out) throws Exception{
-        ArrayList bridgeList = new Database().requestBridgeList();
+        ArrayList<String[]> bridgeList = new Database().requestBridgeList();
+        System.out.println(bridgeList);
         out.writeObject(bridgeList);
         out.flush();
     }
