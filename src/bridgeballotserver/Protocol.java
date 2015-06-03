@@ -122,6 +122,7 @@ class RequestHandler extends Thread {
                 switch (line) {
                     case MessageType.LOGIN: {
                         parseLogin(in, out);
+                        socket.close();
                         break;
                     }
                     case MessageType.DISCONNECT:{
