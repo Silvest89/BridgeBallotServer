@@ -174,20 +174,19 @@ class RequestHandler extends Thread {
         Database d = new Database();
         String[] loginDetails = (String[]) in.readObject();
         System.out.println(loginDetails[0] + " " + loginDetails[1]);
-        boolean exists = d.validateLogin(loginDetails[0], loginDetails[1]);
+        boolean exists = d.checkUserName(loginDetails[0]);
 
         if (!exists) {
-            boolean userNameUnique = d.createAccount(loginDetails[0], loginDetails[1]);
-            if(userNameUnique){
-                out.writeInt(ReturnType.SUCCESS);
-            }
-            
-            else {
-                out.writeInt(ReturnType.FAILURE_NAME_NOT_UNIQUE);
-            }
-        } else {
-            out.writeInt(ReturnType.FAILURE);
+            d.createAccount(loginDetails[0], loginDetails[1]);
+            out.writeInt(ReturnType.SUCCESS);
         }
+            
+        else {
+            out.writeInt(ReturnType.FAILURE_NAME_NOT_UNIQUE);
+        }
+        
+        out.flush();
+        
     }
     
     public void handleToken(ObjectInputStream in, ObjectOutputStream out) throws Exception{

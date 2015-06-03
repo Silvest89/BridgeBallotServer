@@ -53,28 +53,30 @@ public class Database {
         return false;        
     }
     
-    public boolean createAccount(String userName, String password){
+    public boolean checkUserName(String userName){
         try {
             preparedStatement = connect.prepareStatement("SELECT user_name FROM account WHERE user_name = ?");
             preparedStatement.setString(1, userName);
             resultSet = preparedStatement.executeQuery();
             
-            if (!resultSet.next()){
-                preparedStatement = connect.prepareStatement("INSERT INTO account(user_name, password) VALUES (?, ?)");
-                preparedStatement.setString(1, userName);
-                preparedStatement.setString(2, password);
-                preparedStatement.executeUpdate();
-                return true;
-            }
+            return resultSet.next();
             
-            else {
-                return false;
-            }
         } catch (SQLException e){
             e.printStackTrace();
         }
-        
         return false;
+        
+    }
+    
+    public void createAccount(String userName, String password){
+        try {
+            preparedStatement = connect.prepareStatement("INSERT INTO account(user_name, password) VALUES (?, ?)");
+            preparedStatement.setString(1, userName);
+            preparedStatement.setString(2, password);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
     }
     
     public ArrayList requestBridgeList(){
