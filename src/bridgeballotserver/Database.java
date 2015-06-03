@@ -90,8 +90,9 @@ public class Database {
             	bridge[3] = resultSet.getString("latitude");
             	bridge[4] = resultSet.getString("longitude");
             	bridgeList.add(bridge);
-            	            return bridgeList;
+            	            
             }
+            return bridgeList;
 
         } catch (SQLException e){
             e.printStackTrace();
