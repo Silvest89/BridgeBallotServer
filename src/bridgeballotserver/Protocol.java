@@ -4,10 +4,10 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import com.google.android.gcm.server.Message;
-import com.google.android.gcm.server.MulticastResult;
-import com.google.android.gcm.server.Result;
-import com.google.android.gcm.server.Sender;
+//import com.google.android.gcm.server.Message;
+//import com.google.android.gcm.server.MulticastResult;
+//import com.google.android.gcm.server.Result;
+//import com.google.android.gcm.server.Sender;
 
 /**
  * Created by Johnnie Ho on 31-5-2015.
@@ -91,11 +91,13 @@ class RequestHandler extends Thread {
         public static final int BRIDGE_ADD = 4;
         public static final int BRIDGE_DELETE = 5;
         public static final int SEND_NOTIFICATION = 6;
+        public static final int CREATE_ACCOUNT = 7;
     }
 
     public final static class ReturnType {
         public static final int SUCCESS = 0;
         public static final int FAILURE = 1;
+        public static final int FAILURE_NAME_NOT_UNIQUE = 2;
     }
 
     private Socket socket;
@@ -136,6 +138,12 @@ class RequestHandler extends Thread {
                     	socket.close();
                     	break;
                     }
+                    
+                    case MessageType.CREATE_ACCOUNT: {
+                        createAccount(in, out);
+                        socket.close();
+                        break;
+                    }
                     default: {
                         in.close();
                         out.close();
@@ -160,6 +168,26 @@ class RequestHandler extends Thread {
         }
         out.flush();
 
+    }
+    
+    public void createAccount(ObjectInputStream in, ObjectOutputStream out) throws Exception{
+        Database d = new Database();
+        String[] loginDetails = (String[]) in.readObject();
+        System.out.println(loginDetails[0] + " " + loginDetails[1]);
+        boolean exists = d.validateLogin(loginDetails[0], loginDetails[1]);
+
+        if (!exists) {
+            boolean userNameUnique = d.createAccount(loginDetails[0], loginDetails[1]);
+            if(userNameUnique){
+                out.writeInt(ReturnType.SUCCESS);
+            }
+            
+            else {
+                out.writeInt(ReturnType.FAILURE_NAME_NOT_UNIQUE);
+            }
+        } else {
+            out.writeInt(ReturnType.FAILURE);
+        }
     }
     
     public void handleToken(ObjectInputStream in, ObjectOutputStream out) throws Exception{
