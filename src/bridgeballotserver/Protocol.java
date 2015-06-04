@@ -129,11 +129,11 @@ class RequestHandler extends Thread {
                     socket.close();
                     break;
                 }
-                case MessageType.RECEIVE_TOKEN:{
+                /*case MessageType.RECEIVE_TOKEN:{
                     handleToken(in, out);
                     socket.close();
                     break;
-                }
+                }*/
                 case MessageType.BRIDGE_REQUEST: {
                     System.out.println("Parse bridge request.");
                     parseBridgeRequest(in,out);
@@ -163,9 +163,9 @@ class RequestHandler extends Thread {
         boolean isGooglePlus = in.readBoolean();
         String[] loginDetails = (String[]) in.readObject();
 
-        System.out.println(loginDetails[0] + " " + loginDetails[1]);
+        System.out.println(loginDetails[0] + " " + loginDetails[1] + " " + loginDetails[2]);
 
-        int correctLogin = new Database().validateLogin(loginDetails[0], loginDetails[1], isGooglePlus);
+        int correctLogin = new Database().validateLogin(loginDetails[0], loginDetails[1], isGooglePlus, loginDetails[2]);
 
         out.writeInt(correctLogin);
         out.flush();
@@ -191,11 +191,11 @@ class RequestHandler extends Thread {
         out.flush();
     }
     
-    public void handleToken(ObjectInputStream in, ObjectOutputStream out) throws Exception{
+    /*public void handleToken(ObjectInputStream in, ObjectOutputStream out) throws Exception{
         String token = (String) in.readUTF();
 
         System.out.println(token);
-    }
+    }*/
 
     public void parseBridgeRequest(ObjectInputStream in, ObjectOutputStream out) throws Exception{
         ArrayList<String[]> bridgeList = new Database().requestBridgeList();

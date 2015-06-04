@@ -18,6 +18,7 @@ public class Database {
     private Statement statement = null;
     private PreparedStatement preparedStatement = null;
     private ResultSet resultSet = null;
+    private int result;
 
     private static MysqlDataSource mysql = null;
     
@@ -38,7 +39,7 @@ public class Database {
         return mysql;
     }
     
-    public int validateLogin(String userName, String password, boolean isGooglePlus){
+    public int validateLogin(String userName, String password, boolean isGooglePlus, String token){
         try {
             if(!isGooglePlus) {
                 preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE email = ? AND password = ?");
@@ -49,6 +50,18 @@ public class Database {
                 preparedStatement.setString(1, userName);
             }
             resultSet = preparedStatement.executeQuery();
+            
+            if(!isGooglePlus) {
+                preparedStatement = connect.prepareStatement("UPDATE account SET token = ? WHERE email = ? AND password = ?");
+                preparedStatement.setString(1, token);
+                preparedStatement.setString(2, userName);
+                preparedStatement.setString(3, password);
+            }else{
+                preparedStatement = connect.prepareStatement("UPDATE account SET token = ? WHERE email = ?");
+                preparedStatement.setString(1, token);
+                preparedStatement.setString(2, userName);
+            }
+            result = preparedStatement.executeUpdate();
 
             if(resultSet.next())
                 return resultSet.getInt("id");
