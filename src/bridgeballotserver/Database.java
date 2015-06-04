@@ -38,19 +38,26 @@ public class Database {
         return mysql;
     }
     
-    public boolean validateLogin(String userName, String password){
+    public int validateLogin(String userName, String password, boolean isGooglePlus){
         try {
-            preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE user_name = ? AND password = ?");
-            preparedStatement.setString(1, userName);
-            preparedStatement.setString(2, password);
+            if(!isGooglePlus) {
+                preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE email = ? AND password = ?");
+                preparedStatement.setString(1, userName);
+                preparedStatement.setString(2, password);
+            }else{
+                preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE email = ?");
+                preparedStatement.setString(1, userName);
+            }
             resultSet = preparedStatement.executeQuery();
-            
-            return resultSet.next();
+
+            if(resultSet.next())
+                return resultSet.getInt("id");
+
         } catch (SQLException e){
             e.printStackTrace();
         }
         
-        return false;        
+        return 0;
     }
     
     public boolean checkUserName(String userName){

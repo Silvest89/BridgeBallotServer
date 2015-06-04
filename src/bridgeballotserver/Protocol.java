@@ -109,74 +109,74 @@ class RequestHandler extends Thread {
 
     @Override
     public void run() {
-            try {
-                System.out.println("Received a connection");
-                // Get input and output streams
-                //ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                out.flush();
-                int line = in.readInt();
-                System.out.println("Test1:" + line);
+        try {
+            System.out.println("Received a connection");
+            // Get input and output streams
+            //ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            out.flush();
+            int line = in.readInt();
+            System.out.println("Test1:" + line);
 
-                switch (line) {
-                    case MessageType.LOGIN: {
-                        parseLogin(in, out);
-                        socket.close();
-                        break;
-                    }
-                    case MessageType.DISCONNECT:{
-                        socket.close();
-                        break;
-                    }
-                    case MessageType.RECEIVE_TOKEN:{
-                        handleToken(in, out);
-                        socket.close();  
-                        break;
-                    }
-                    case MessageType.BRIDGE_REQUEST: {
-                        System.out.println("Parse bridge request.");
-                    	parseBridgeRequest(in,out);
-                        System.out.println("Closing socket");
-                    	//socket.close();
-                    	break;
-                    }
-                    
-                    case MessageType.CREATE_ACCOUNT: {
-                        createAccount(in, out);
-                        socket.close();
-                        break;
-                    }
-                    default: {
-                        in.close();
-                        out.close();
-                        socket.close();
-                        break;
-                    }
+            switch (line) {
+                case MessageType.LOGIN: {
+                    parseLogin(in, out);
+                    socket.close();
+                    break;
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+                case MessageType.DISCONNECT:{
+                    socket.close();
+                    break;
+                }
+                case MessageType.RECEIVE_TOKEN:{
+                    handleToken(in, out);
+                    socket.close();
+                    break;
+                }
+                case MessageType.BRIDGE_REQUEST: {
+                    System.out.println("Parse bridge request.");
+                    parseBridgeRequest(in,out);
+                    System.out.println("Closing socket");
+                    //socket.close();
+                    break;
+                }
+
+                case MessageType.CREATE_ACCOUNT: {
+                    createAccount(in, out);
+                    socket.close();
+                    break;
+                }
+                default: {
+                    in.close();
+                    out.close();
+                    socket.close();
+                    break;
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void parseLogin(ObjectInputStream in, ObjectOutputStream out) throws Exception{
+        boolean isGooglePlus = in.readBoolean();
         String[] loginDetails = (String[]) in.readObject();
+
         System.out.println(loginDetails[0] + " " + loginDetails[1]);
-        boolean correctLogin = new Database().validateLogin(loginDetails[0], loginDetails[1]);
 
-        if (correctLogin) {
-            out.writeInt(ReturnType.SUCCESS);
-        } else {
-            out.writeInt(ReturnType.FAILURE);
-        }
+        int correctLogin = new Database().validateLogin(loginDetails[0], loginDetails[1], isGooglePlus);
+
+        out.writeInt(correctLogin);
         out.flush();
-
     }
     
     public void createAccount(ObjectInputStream in, ObjectOutputStream out) throws Exception{
         Database d = new Database();
         String[] loginDetails = (String[]) in.readObject();
+
         System.out.println(loginDetails[0] + " " + loginDetails[1]);
+
         boolean exists = d.checkUserName(loginDetails[0]);
 
         if (!exists) {
@@ -189,20 +189,19 @@ class RequestHandler extends Thread {
         }
         
         out.flush();
-        
     }
     
     public void handleToken(ObjectInputStream in, ObjectOutputStream out) throws Exception{
         String token = (String) in.readUTF();
+
         System.out.println(token);
     }
-    
-    
-    
-    
+
     public void parseBridgeRequest(ObjectInputStream in, ObjectOutputStream out) throws Exception{
         ArrayList<String[]> bridgeList = new Database().requestBridgeList();
+
         System.out.println(bridgeList);
+
         out.writeObject(bridgeList);
         out.flush();
     }
