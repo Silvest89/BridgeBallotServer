@@ -75,7 +75,7 @@ public class Database {
     
     public boolean checkUserName(String userName){
         try {
-            preparedStatement = connect.prepareStatement("SELECT user_name FROM account WHERE user_name = ?");
+            preparedStatement = connect.prepareStatement("SELECT email FROM account WHERE email = ?");
             preparedStatement.setString(1, userName);
             resultSet = preparedStatement.executeQuery();
             
@@ -90,7 +90,7 @@ public class Database {
     
     public void createAccount(String userName, String password){
         try {
-            preparedStatement = connect.prepareStatement("INSERT INTO account(user_name, password) VALUES (?, ?)");
+            preparedStatement = connect.prepareStatement("INSERT INTO account(email, password) VALUES (?, ?)");
             preparedStatement.setString(1, userName);
             preparedStatement.setString(2, password);
             preparedStatement.executeUpdate();
