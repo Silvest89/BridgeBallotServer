@@ -18,7 +18,6 @@ public class Database {
     private Statement statement = null;
     private PreparedStatement preparedStatement = null;
     private ResultSet resultSet = null;
-    private int result;
 
     private static MysqlDataSource mysql = null;
     
@@ -61,7 +60,7 @@ public class Database {
                 preparedStatement.setString(1, token);
                 preparedStatement.setString(2, userName);
             }
-            result = preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
 
             if(resultSet.next())
                 return resultSet.getInt("id");
@@ -71,6 +70,17 @@ public class Database {
         }
         
         return 0;
+    }
+
+    public void updateRegToken(int id, String token){
+        try {
+            preparedStatement = connect.prepareStatement("UPDATE account SET token = ? WHERE id = ?");
+            preparedStatement.setString(1, token);
+            preparedStatement.setInt(2, id);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
     
     public boolean checkUserName(String userName){
@@ -107,11 +117,10 @@ public class Database {
             while(resultSet.next()){
             	String[] bridge = new String[5];
             	bridge[0] = Integer.toString(resultSet.getInt("id"));
-                String name = resultSet.getString("name");
-            	bridge[1] = name;
-            	//bridge[2] = resultSet.getString("location");
-            	//bridge[3] = resultSet.getString("latitude");
-            	//bridge[4] = resultSet.getString("longitude");
+            	bridge[1] = resultSet.getString("name");
+            	bridge[2] = resultSet.getString("location");
+            	bridge[3] = resultSet.getString("latitude");
+            	bridge[4] = resultSet.getString("longitude");
 
             	bridgeList.add(bridge);
             	            
@@ -122,5 +131,24 @@ public class Database {
             e.printStackTrace();
         }   
         return null;
+    }
+
+    public void loadBridges(){
+        try {
+            preparedStatement = connect.prepareStatement("SELECT * FROM bridges");
+            resultSet = preparedStatement.executeQuery();
+            ArrayList<String[]> bridgeList = new ArrayList();
+            while(resultSet.next()){
+                Bridge bridge = new Bridge(resultSet.getInt("id"),
+                        resultSet.getString("name"),
+                        resultSet.getString("location"),
+                        Double.parseDouble(resultSet.getString("latitude")),
+                        Double.parseDouble(resultSet.getString("longitude")));
+                BridgeBallotServer.bridgeMap.put(resultSet.getInt("id"), bridge);
+            }
+
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
     }
 }
