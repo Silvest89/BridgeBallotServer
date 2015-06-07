@@ -3,6 +3,7 @@ package bridgeballotserver;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,6 +20,7 @@ public class BridgeBallotServer implements Runnable{
         public static final int BRIDGE_DELETE = 5;
         public static final int SEND_NOTIFICATION = 6;
         public static final int CREATE_ACCOUNT = 7;
+        public static final int HANDSHAKE = 10;
     }
 
     public final static class ReturnType {
@@ -87,8 +89,8 @@ public class BridgeBallotServer implements Runnable{
     @Override
     public void run() {
         try {
-        System.out.println("Just connected to "
-                + serverSocket.getRemoteSocketAddress());
+            System.out.println(HelperTools.getCurrentTimeStamp() + "Connection from: "
+                    + serverSocket.getRemoteSocketAddress());
 
             ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(serverSocket.getInputStream()));
             ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(serverSocket.getOutputStream()));
@@ -98,39 +100,38 @@ public class BridgeBallotServer implements Runnable{
             switch (line) {
                 case MessageType.LOGIN: {
                     parseLogin(in, out);
+                    break;
+                }
+                case MessageType.DISCONNECT: {
                     serverSocket.close();
                     break;
                 }
-                case MessageType.DISCONNECT:{
-                    serverSocket.close();
-                    break;
-                }
-                case MessageType.UPDATE_TOKEN:{
+                case MessageType.UPDATE_TOKEN: {
                     //parseUpdateToken(in, out);
                     break;
                 }
                 case MessageType.BRIDGE_REQUEST: {
-                    parseBridgeRequest(in,out);
+                    parseBridgeRequest(in, out);
+                    break;
+                }
+                case MessageType.HANDSHAKE: {
+                    System.out.println("test");
                     break;
                 }
                 case MessageType.CREATE_ACCOUNT: {
                     createAccount(in, out);
-                    serverSocket.close();
-                    break;
-                }
-                default: {
-                    in.close();
-                    out.close();
-                    serverSocket.close();
                     break;
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            in.close();
+            out.close();
+            serverSocket.close();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     public void parseLogin(ObjectInputStream in, ObjectOutputStream out) throws Exception{
         boolean isGooglePlus = in.readBoolean();
         String[] loginDetails = (String[]) in.readObject();
