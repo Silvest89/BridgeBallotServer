@@ -3,6 +3,7 @@ package bridgeballotserver;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public class BridgeBallotServer implements Runnable{
 
     public static HashMap<Integer, Bridge> bridgeMap = new HashMap<>();
 
-    Socket serverSocket;
+    private Socket serverSocket;
 
     public BridgeBallotServer(Socket serverSocket){
         this.serverSocket = serverSocket;
@@ -63,24 +64,25 @@ public class BridgeBallotServer implements Runnable{
    }*/
 
     public static void main(String[] args) throws Exception{
+        System.out.println(HelperTools.getCurrentTimeStamp() + "Bridge Ballot Server Build 6");
         Database.getDataSource();
 
         new Database().loadBridges();
-        Map<Integer, Bridge> bridgeMap = getBridgeMap();
-        Iterator it = bridgeMap.entrySet().iterator();
+        bridgeMap = getBridgeMap();
+        /*Iterator it = bridgeMap.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             Bridge bridge = (Bridge) pair.getValue();
             System.out.println(HelperTools.getCurrentTimeStamp() + pair.getKey() + " = " + bridge.getName());
             //it.remove(); // avoids a ConcurrentModificationException
-        }
+        }*/
         System.out.println(HelperTools.getCurrentTimeStamp() + "Loaded " + bridgeMap.size() + " bridges.");
 
         int port = 21;
 
         ServerSocket serverSocket = new ServerSocket(port);
+        System.out.println(HelperTools.getCurrentTimeStamp() + "Server listening on port 21");
         while (true) {
-            System.out.println(HelperTools.getCurrentTimeStamp() + "Server listening on port 21");
             Socket socket = serverSocket.accept();
             new Thread(new BridgeBallotServer(socket)).start();
         }
@@ -123,9 +125,9 @@ public class BridgeBallotServer implements Runnable{
                     break;
                 }
             }
-            in.close();
-            out.close();
-            serverSocket.close();
+            //in.close();
+            //out.close();
+            //serverSocket.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -142,6 +144,7 @@ public class BridgeBallotServer implements Runnable{
 
         out.writeInt(correctLogin);
         out.flush();
+        out.reset();
     }
 
     public void createAccount(ObjectInputStream in, ObjectOutputStream out) throws Exception{
