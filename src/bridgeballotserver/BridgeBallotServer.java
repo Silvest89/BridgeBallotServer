@@ -21,6 +21,7 @@ public class BridgeBallotServer implements Runnable{
         public static final int BRIDGE_DELETE = 5;
         public static final int SEND_NOTIFICATION = 6;
         public static final int CREATE_ACCOUNT = 7;
+        public static final int BRIDGE_WATCHLIST_ADD = 8;
         public static final int HANDSHAKE = 10;
     }
 
@@ -124,6 +125,10 @@ public class BridgeBallotServer implements Runnable{
                     createAccount(in, out);
                     break;
                 }
+                case MessageType.BRIDGE_WATCHLIST_ADD: {
+                	addBridgeToWatchlist(in, out);
+                	break;
+                }
             }
             //in.close();
             //out.close();
@@ -180,4 +185,13 @@ public class BridgeBallotServer implements Runnable{
         out.writeObject(bridgeMap);
         out.flush();
     }
+    public void addBridgeToWatchlist(ObjectInputStream in, ObjectOutputStream out) throws Exception{
+    	Database d = new Database();
+    	String[] watchlistDetails = (String[]) in.readObject();
+    	d.addBridgeToWatchlist(watchlistDetails[0], watchlistDetails[1]);
+    	out.writeInt(ReturnType.SUCCESS);
+    	out.flush();
+   	
+    }
+    
 }

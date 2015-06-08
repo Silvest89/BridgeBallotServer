@@ -151,4 +151,17 @@ public class Database {
             e.printStackTrace();
         }
     }
+    
+    public void addBridgeToWatchlist(String bridgeName, String username){
+    	 try {
+             preparedStatement = connect.prepareStatement("INSERT INTO `bridge_watchlist` (account_id, bridge_id, comments) SELECT a.id, b.id, "" FROM account a CROSS JOIN bridges b WHERE a.email = '?' AND b.name = '?'");
+             preparedStatement.setString(1, username);
+             preparedStatement.setString(2, bridgeName);
+             preparedStatement.executeUpdate();
+             }
+         } catch (SQLException e){
+             e.printStackTrace();
+         }
+    	
+    }
 }
