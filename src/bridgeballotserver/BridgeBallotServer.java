@@ -196,7 +196,7 @@ public class BridgeBallotServer implements Runnable{
     }
     public void requestWatchlist(ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
         Database d = new Database();
-        int username_id = (int) in.readObject();
+        int username_id = in.readInt();
         HashMap<Integer, Bridge> watchMap = d.requestWatchlist(username_id);
         out.writeObject(watchMap);
         out.flush();
