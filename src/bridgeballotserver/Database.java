@@ -7,6 +7,7 @@ import java.sql.Statement;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import javax.sql.DataSource;
 
 /**
@@ -20,7 +21,7 @@ public class Database {
     private ResultSet resultSet = null;
 
     private static MysqlDataSource mysql = null;
-    
+
     public Database(){
         try {
             connect = mysql.getConnection();
@@ -28,16 +29,16 @@ public class Database {
             e.printStackTrace();
         }
     }
-    
+
     public static DataSource getDataSource(){
         mysql = new MysqlDataSource();
         mysql.setURL("jdbc:mysql://localhost/appflow");
         mysql.setUser("root");
         mysql.setPassword("appflow1");
-        
+
         return mysql;
     }
-    
+
     public int validateLogin(String userName, String password, boolean isGooglePlus, String token){
         try {
             if(!isGooglePlus) {
@@ -49,7 +50,7 @@ public class Database {
                 preparedStatement.setString(1, userName);
             }
             resultSet = preparedStatement.executeQuery();
-            
+
             if(!isGooglePlus) {
                 preparedStatement = connect.prepareStatement("UPDATE account SET token = ? WHERE email = ? AND password = ?");
                 preparedStatement.setString(1, token);
@@ -68,7 +69,7 @@ public class Database {
         } catch (SQLException e){
             e.printStackTrace();
         }
-        
+
         return 0;
     }
 
@@ -82,22 +83,22 @@ public class Database {
             e.printStackTrace();
         }
     }
-    
+
     public boolean checkUserName(String userName){
         try {
             preparedStatement = connect.prepareStatement("SELECT email FROM account WHERE email = ?");
             preparedStatement.setString(1, userName);
             resultSet = preparedStatement.executeQuery();
-            
+
             return resultSet.next();
-            
+
         } catch (SQLException e){
             e.printStackTrace();
         }
         return false;
-        
+
     }
-    
+
     public void createAccount(String userName, String password){
         try {
             preparedStatement = connect.prepareStatement("INSERT INTO account(email, password) VALUES (?, ?)");
@@ -108,7 +109,7 @@ public class Database {
             e.printStackTrace();
         }
     }
-    
+
     public ArrayList<String[]> requestBridgeList(){
     	try {
             preparedStatement = connect.prepareStatement("SELECT * FROM bridges");
@@ -123,13 +124,13 @@ public class Database {
             	bridge[4] = resultSet.getString("longitude");
 
             	bridgeList.add(bridge);
-            	            
+
             }
             return bridgeList;
 
         } catch (SQLException e){
             e.printStackTrace();
-        }   
+        }
         return null;
     }
 
@@ -151,17 +152,39 @@ public class Database {
             e.printStackTrace();
         }
     }
-    
-    public void addBridgeToWatchlist(int bridge_id, int username_id){
-    	 try {
-             preparedStatement = connect.prepareStatement("INSERT INTO `bridge_watchlist` (account_id, bridge_id) VALUES ('?', '?')");
-             preparedStatement.setString(1, username_id);
-             preparedStatement.setString(2, bridge_id);
-             preparedStatement.executeUpdate();
-             }
-         } catch (SQLException e){
+
+    public void addBridgeToWatchlist(int bridge_id, int username_id) throws SQLException {
+        try {
+            preparedStatement = connect.prepareStatement("INSERT IGNORE INTO `bridge_watchlist` (account_id, bridge_id) VALUES ('?', '?')");
+            preparedStatement.setInt(1, username_id);
+            preparedStatement.setInt(2, bridge_id);
+            preparedStatement.executeUpdate();
+        }
+         catch (SQLException e){
              e.printStackTrace();
          }
-    	
+
     }
+
+    public HashMap<Integer, Bridge> requestWatchlist(int username_id){
+        try {
+            HashMap<Integer, Bridge> bridgeMap = new HashMap<>();
+            preparedStatement = connect.prepareStatement("SELECT * FROM bridges WHERE id IN (SELECT ID FROM bridge_watchlist WHERE account_id = ?)");
+            preparedStatement.setInt(1, username_id);
+            resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                Bridge bridge = new Bridge(resultSet.getInt("id"),
+                        resultSet.getString("name"),
+                        resultSet.getString("location"),
+                        Double.parseDouble(resultSet.getString("latitude")),
+                        Double.parseDouble(resultSet.getString("longitude")));
+                bridgeMap.put(resultSet.getInt("id"), bridge);
+            }
+        return bridgeMap;
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

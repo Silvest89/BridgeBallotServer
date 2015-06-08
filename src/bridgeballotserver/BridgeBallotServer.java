@@ -21,6 +21,7 @@ public class BridgeBallotServer implements Runnable{
         public static final int SEND_NOTIFICATION = 6;
         public static final int CREATE_ACCOUNT = 7;
         public static final int BRIDGE_WATCHLIST_ADD = 8;
+        public static final int BRIDGE_ON_WATCHLIST = 9;
         public static final int HANDSHAKE = 10;
     }
 
@@ -127,6 +128,10 @@ public class BridgeBallotServer implements Runnable{
                 	addBridgeToWatchlist(in, out);
                 	break;
                 }
+                case MessageType.BRIDGE_ON_WATCHLIST: {
+                    requestWatchlist(in, out);
+                    break;
+                }
             }
             in.close();
             out.close();
@@ -188,7 +193,13 @@ public class BridgeBallotServer implements Runnable{
     	d.addBridgeToWatchlist(watchlistDetails[0], watchlistDetails[1]);
     	out.writeInt(ReturnType.SUCCESS);
     	out.flush();
-   	
+    }
+    public void requestWatchlist(ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
+        Database d = new Database();
+        int username_id = (int) in.readObject();
+        HashMap<Integer, Bridge> watchMap = d.requestWatchlist(username_id);
+        out.writeObject(watchMap);
+        out.flush();
     }
     
 }
