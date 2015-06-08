@@ -184,7 +184,7 @@ public class BridgeBallotServer implements Runnable{
     }
     public void addBridgeToWatchlist(ObjectInputStream in, ObjectOutputStream out) throws Exception{
     	Database d = new Database();
-    	String[] watchlistDetails = (String[]) in.readObject();
+    	int[] watchlistDetails = (int[]) in.readObject();
     	d.addBridgeToWatchlist(watchlistDetails[0], watchlistDetails[1]);
     	out.writeInt(ReturnType.SUCCESS);
     	out.flush();

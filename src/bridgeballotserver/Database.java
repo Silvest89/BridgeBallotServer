@@ -152,11 +152,11 @@ public class Database {
         }
     }
     
-    public void addBridgeToWatchlist(String bridgeName, String username){
+    public void addBridgeToWatchlist(int bridge_id, int username_id){
     	 try {
-             preparedStatement = connect.prepareStatement("INSERT INTO `bridge_watchlist` (account_id, bridge_id, comments) SELECT a.id, b.id, "" FROM account a CROSS JOIN bridges b WHERE a.email = '?' AND b.name = '?'");
-             preparedStatement.setString(1, username);
-             preparedStatement.setString(2, bridgeName);
+             preparedStatement = connect.prepareStatement("INSERT INTO `bridge_watchlist` (account_id, bridge_id) VALUES ('?', '?')");
+             preparedStatement.setString(1, username_id);
+             preparedStatement.setString(2, bridge_id);
              preparedStatement.executeUpdate();
              }
          } catch (SQLException e){
