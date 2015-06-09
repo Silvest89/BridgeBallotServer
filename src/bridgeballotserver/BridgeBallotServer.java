@@ -219,9 +219,21 @@ public class BridgeBallotServer implements Runnable{
     public void requestWatchlist(ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
         Database d = new Database();
         int username_id = in.readInt();
-        HashMap<Integer, Bridge> watchMap = d.requestWatchlist(username_id);
+        HashMap<Integer, Bridge> watchMap = statusIterator(d.requestWatchlist(username_id));
         out.writeObject(watchMap);
         out.flush();
     }
-    
+    public HashMap<Integer, Bridge> statusIterator(HashMap<Integer, Bridge> input){
+        Iterator it = input.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            Bridge bridge = (Bridge) pair.getValue();
+            bridge.setStatus(getBridgeStatusById(bridge.getId()));
+        }
+        return input;
+    }
+    public boolean getBridgeStatusById(int id){
+        Bridge bridge = bridgeMap.get(id);
+        return bridge.getStatus();
+    }
 }

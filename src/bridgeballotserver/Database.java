@@ -151,7 +151,7 @@ public class Database {
                         resultSet.getString("location"),
                         Double.parseDouble(resultSet.getString("latitude")),
                         Double.parseDouble(resultSet.getString("longitude")),
-                        resultSet.getBoolean("status"));
+                        false);
                 BridgeBallotServer.bridgeMap.put(resultSet.getInt("id"), bridge);
             }
 
@@ -185,7 +185,7 @@ public class Database {
                         resultSet.getString("location"),
                         Double.parseDouble(resultSet.getString("latitude")),
                         Double.parseDouble(resultSet.getString("longitude")),
-                        resultSet.getBoolean("status"));
+                        false);
                 bridgeMap.put(resultSet.getInt("id"), bridge);
             }
         return bridgeMap;

@@ -53,4 +53,8 @@ public class Bridge implements Serializable {
     }
 
     public boolean getStatus(){ return status; }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
 }
