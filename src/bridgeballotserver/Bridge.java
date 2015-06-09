@@ -16,14 +16,16 @@ public class Bridge implements Serializable {
     private String location;
     private double latitude, longitude;
     private int distance;
+    private boolean status;
 
-    public Bridge(int id, String name, String location, double latitude, double longitude){
+    public Bridge(int id, String name, String location, double latitude, double longitude, boolean status){
         this.id = id;
         this.name = name;
         this.location = location;
         this.latitude = latitude;
         this.longitude = longitude;
         this.distance = 0;
+        this.status = status;
     }
 
     public int getId() {
@@ -49,4 +51,6 @@ public class Bridge implements Serializable {
     public int getDistance(){
         return distance;
     }
+
+    public boolean getStatus(){ return status; }
 }
