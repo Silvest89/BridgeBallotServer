@@ -15,15 +15,17 @@ public class BridgeBallotServer implements Runnable{
     public final static class MessageType {
         public static final int LOGIN = 0;
         public static final int DISCONNECT = 1;
-        public static final int UPDATE_TOKEN = 2;
-        public static final int BRIDGE_REQUEST = 3;
-        public static final int BRIDGE_ADD = 4;
-        public static final int BRIDGE_DELETE = 5;
-        public static final int SEND_NOTIFICATION = 6;
-        public static final int CREATE_ACCOUNT = 7;
-        public static final int BRIDGE_WATCHLIST_ADD = 8;
-        public static final int BRIDGE_ON_WATCHLIST = 9;
-        public static final int HANDSHAKE = 10;
+        public static final int SEND_TOKEN = 2;
+
+        public static final int CREATE_ACCOUNT = 5;
+        public static final int REQUEST_USERS = 6;
+        public static final int DELETE_USER = 7;
+
+        public static final int BRIDGE_WATCHLIST_ADD = 10;
+        public static final int BRIDGE_ON_WATCHLIST = 11;
+        public static final int BRIDGE_REQUEST = 12;
+        public static final int BRIDGE_ADD = 13;
+        public static final int BRIDGE_DELETE = 14;
     }
 
     public final static class ReturnType {
@@ -110,16 +112,12 @@ public class BridgeBallotServer implements Runnable{
                     serverSocket.close();
                     break;
                 }
-                case MessageType.UPDATE_TOKEN: {
+                case MessageType.SEND_TOKEN: {
                     //parseUpdateToken(in, out);
                     break;
                 }
                 case MessageType.BRIDGE_REQUEST: {
                     parseBridgeRequest(in, out);
-                    break;
-                }
-                case MessageType.HANDSHAKE: {
-                    System.out.println("test");
                     break;
                 }
                 case MessageType.CREATE_ACCOUNT: {
@@ -134,10 +132,18 @@ public class BridgeBallotServer implements Runnable{
                     requestWatchlist(in, out);
                     break;
                 }
+                case MessageType.REQUEST_USERS: {
+                    requestUsers(in, out);
+                    break;
+                }
+                case MessageType.DELETE_USER: {
+                    deleteUser(in, out);
+                    break;
+                }
             }
-            //in.close();
-            //out.close();
-            //serverSocket.close();
+            in.close();
+            out.close();
+            serverSocket.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,9 +156,9 @@ public class BridgeBallotServer implements Runnable{
 
         System.out.println(loginDetails[0] + " " + loginDetails[1] + " " + loginDetails[2]);
 
-        int correctLogin = new Database().validateLogin(loginDetails[0], loginDetails[1], isGooglePlus, loginDetails[2]);
+        int[] correctLogin = new Database().validateLogin(loginDetails[0], loginDetails[1], isGooglePlus, loginDetails[2]);
 
-        out.writeInt(correctLogin);
+        out.writeObject(correctLogin);
         out.flush();
         out.reset();
     }
@@ -174,6 +180,19 @@ public class BridgeBallotServer implements Runnable{
             out.writeInt(ReturnType.FAILURE_NAME_NOT_UNIQUE);
         }
 
+        out.flush();
+    }
+
+    public void requestUsers(ObjectInputStream in, ObjectOutputStream out) throws IOException {
+        ArrayList<String> users = new Database().getUsers();
+
+        out.writeObject(users);
+        out.flush();
+    }
+
+    public void deleteUser(ObjectInputStream in, ObjectOutputStream out) throws IOException {
+        new Database().deleteUser(in.readUTF());
+        out.writeInt(ReturnType.SUCCESS);
         out.flush();
     }
 
