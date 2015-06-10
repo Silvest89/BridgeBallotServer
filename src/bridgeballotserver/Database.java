@@ -145,13 +145,13 @@ public class Database {
         try {
             preparedStatement = connect.prepareStatement("SELECT * FROM bridges");
             resultSet = preparedStatement.executeQuery();
-            ArrayList<String[]> bridgeList = new ArrayList();
             while(resultSet.next()){
                 Bridge bridge = new Bridge(resultSet.getInt("id"),
                         resultSet.getString("name"),
                         resultSet.getString("location"),
                         Double.parseDouble(resultSet.getString("latitude")),
-                        Double.parseDouble(resultSet.getString("longitude")));
+                        Double.parseDouble(resultSet.getString("longitude")),
+                        false);
                 BridgeBallotServer.bridgeMap.put(resultSet.getInt("id"), bridge);
             }
 
@@ -184,7 +184,8 @@ public class Database {
                         resultSet.getString("name"),
                         resultSet.getString("location"),
                         Double.parseDouble(resultSet.getString("latitude")),
-                        Double.parseDouble(resultSet.getString("longitude")));
+                        Double.parseDouble(resultSet.getString("longitude")),
+                        false);
                 bridgeMap.put(resultSet.getInt("id"), bridge);
             }
         return bridgeMap;
