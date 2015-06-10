@@ -8,5 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="BridgeBallotServer" level="project" />
+    <orderEntry type="library" name="netty-all-5.0.0.Alpha3-20150610.170146-226" level="project" />
   </component>
 </module>
