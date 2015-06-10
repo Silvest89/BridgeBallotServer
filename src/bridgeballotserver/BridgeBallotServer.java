@@ -26,6 +26,7 @@ public class BridgeBallotServer implements Runnable{
         public static final int BRIDGE_REQUEST = 12;
         public static final int BRIDGE_ADD = 13;
         public static final int BRIDGE_DELETE = 14;
+        public static final int BRIDGE_UPDATE = 15;
     }
 
     public final static class ReturnType {
@@ -72,7 +73,7 @@ public class BridgeBallotServer implements Runnable{
         Database.getDataSource();
 
         new Database().loadBridges();
-        bridgeMap = getBridgeMap();
+        //bridgeMap = getBridgeMap();
         /*Iterator it = bridgeMap.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
@@ -138,6 +139,10 @@ public class BridgeBallotServer implements Runnable{
                 }
                 case MessageType.DELETE_USER: {
                     deleteUser(in, out);
+                    break;
+                }
+                case MessageType.BRIDGE_UPDATE: {
+                    updateBridgeList(in, out);
                     break;
                 }
             }
@@ -228,12 +233,18 @@ public class BridgeBallotServer implements Runnable{
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
             Bridge bridge = (Bridge) pair.getValue();
-            bridge.setStatus(getBridgeStatusById(bridge.getId()));
+            bridge.setOpen(getBridgeStatusById(bridge.getId()));
         }
         return input;
     }
     public boolean getBridgeStatusById(int id){
         Bridge bridge = bridgeMap.get(id);
-        return bridge.getStatus();
+        return bridge.isOpen();
+    }
+
+    public void updateBridgeList(ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
+        Bridge bridge = bridgeMap.get(in.readInt());
+        bridge.setOpen(true);
+
     }
 }
