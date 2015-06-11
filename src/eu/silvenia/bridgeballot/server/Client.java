@@ -1,5 +1,6 @@
 package eu.silvenia.bridgeballot.server;
 
+import eu.silvenia.bridgeballot.network.Bridge;
 import io.netty.channel.Channel;
 
 import java.util.HashMap;
@@ -15,6 +16,8 @@ public class Client {
     private String gcmToken;
     private int accessLevel;
     private Channel channel;
+
+    public HashMap<Integer, Bridge> watchList = new HashMap<>();
 
     public Client(int id, String userName, String gcmToken, int accessLevel, Channel channel){
         this.id = id;

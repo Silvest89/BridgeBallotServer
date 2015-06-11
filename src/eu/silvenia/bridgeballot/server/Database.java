@@ -55,6 +55,13 @@ public class Database {
                         resultSet.getString("token"),
                         resultSet.getInt("access_level"),
                         channel);
+
+                preparedStatement = connect.prepareStatement("SELECT * FROM bridge_watchlist WHERE id = ? ");
+                preparedStatement.setInt(1, client.getId());
+                resultSet = preparedStatement.executeQuery();
+                while(resultSet.next()) {
+                    client.watchList.put(resultSet.getInt("bridge_id"), BridgeBallotServer.bridgeMap.get(resultSet.getInt("bridge_id")));
+                }
             }
             return client;
 
@@ -141,30 +148,6 @@ public class Database {
         }
     }
 
-    public ArrayList<String[]> requestBridgeList(){
-    	try {
-            preparedStatement = connect.prepareStatement("SELECT * FROM bridges");
-            resultSet = preparedStatement.executeQuery();
-            ArrayList<String[]> bridgeList = new ArrayList();
-            while(resultSet.next()){
-            	String[] bridge = new String[5];
-            	bridge[0] = Integer.toString(resultSet.getInt("id"));
-            	bridge[1] = resultSet.getString("name");
-            	bridge[2] = resultSet.getString("location");
-            	bridge[3] = resultSet.getString("latitude");
-            	bridge[4] = resultSet.getString("longitude");
-
-            	bridgeList.add(bridge);
-
-            }
-            return bridgeList;
-
-        } catch (SQLException e){
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     public void loadBridges(){
         try {
             preparedStatement = connect.prepareStatement("SELECT * FROM bridges");
@@ -184,24 +167,11 @@ public class Database {
         }
     }
 
-    public void addBridgeToWatchlist(int bridge_id, int username_id) throws SQLException {
-        try {
-            preparedStatement = connect.prepareStatement("INSERT IGNORE INTO `bridge_watchlist` (account_id, bridge_id) VALUES ('?', '?')");
-            preparedStatement.setInt(1, username_id);
-            preparedStatement.setInt(2, bridge_id);
-            preparedStatement.executeUpdate();
-        }
-         catch (SQLException e){
-             e.printStackTrace();
-         }
-
-    }
-
-    public HashMap<Integer, Bridge> requestWatchlist(int username_id){
+    public HashMap<Integer, Bridge> requestWatchlist(int userId){
         try {
             HashMap<Integer, Bridge> bridgeMap = new HashMap<>();
             preparedStatement = connect.prepareStatement("SELECT * FROM bridges WHERE id IN (SELECT ID FROM bridge_watchlist WHERE account_id = ?)");
-            preparedStatement.setInt(1, username_id);
+            preparedStatement.setInt(1, userId);
             resultSet = preparedStatement.executeQuery();
             while(resultSet.next()){
                 Bridge bridge = new Bridge(resultSet.getInt("id"),
@@ -247,4 +217,29 @@ public class Database {
         }
     }
 
+    public void addBridgeToWatchlist(int userId, int bridgeId){
+        try {
+            preparedStatement = connect.prepareStatement("INSERT INTO bridge_watchlist (account_id, bridge_id) VALUES (?, ?)");
+            preparedStatement.setInt(1, userId);
+            preparedStatement.setInt(2, bridgeId);
+            preparedStatement.executeUpdate();
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    public void removeBridgeFromWatchlist(int userId, int bridgeId) {
+        try {
+            preparedStatement = connect.prepareStatement("DELETE FROM bridge_watchlist WHERE account_id = ? AND bridge_id = ?");
+            preparedStatement.setInt(1, userId);
+            preparedStatement.setInt(2, bridgeId);
+            preparedStatement.executeUpdate();
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+
+    }
 }

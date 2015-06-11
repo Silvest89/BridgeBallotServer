@@ -4,6 +4,7 @@ package eu.silvenia.bridgeballot.server;
  * Created by Johnnie Ho on 10-6-2015.
  */
 
+import bridgeballotserver.*;
 import eu.silvenia.bridgeballot.network.Bridge;
 import eu.silvenia.bridgeballot.network.ProtocolMessage;
 import io.netty.channel.ChannelHandlerAdapter;
@@ -11,6 +12,8 @@ import io.netty.channel.ChannelHandlerContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -31,12 +34,11 @@ public class ClientHandler extends ChannelHandlerAdapter {
         public static final int REQUEST_USERS = 6;
         public static final int DELETE_USER = 7;
 
-        public static final int BRIDGE_WATCHLIST_ADD = 10;
-        public static final int BRIDGE_ON_WATCHLIST = 11;
-        public static final int BRIDGE_REQUEST = 12;
-        public static final int BRIDGE_ADD = 13;
-        public static final int BRIDGE_DELETE = 14;
-        public static final int BRIDGE_UPDATE = 15;
+        public static final int REQUEST_BRIDGE = 10;
+        public static final int REQUEST_WATCHLIST = 11;
+
+        public static final int WATCHLIST_ADD = 12;
+        public static final int WATCHLIST_DELETE= 13;
     }
 
     @Override
@@ -59,8 +61,20 @@ public class ClientHandler extends ChannelHandlerAdapter {
                     ctx.close();
                     break;
                 }
-                case MessageType.BRIDGE_REQUEST: {
+                case MessageType.REQUEST_BRIDGE: {
                     parseBridgeRequest();
+                    break;
+                }
+                case MessageType.REQUEST_WATCHLIST: {
+                    parseWatchListRequest();
+                    break;
+                }
+                case MessageType.WATCHLIST_ADD: {
+                    parseAddToWatchList(message);
+                    break;
+                }
+                case MessageType.WATCHLIST_DELETE: {
+                    parseRemoveFromWatchList(message);
                     break;
                 }
             }
@@ -90,6 +104,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
         if(client != null) {
             Client.clientList.put(client.getId(), client);
             this.client = client;
+            client.watchList = new Database().requestWatchlist(client.getId());
         }
 
         System.out.println(HelperTools.getCurrentTimeStamp() + "User: " + client.getUserName() + " logged in successfully.");
@@ -100,10 +115,61 @@ public class ClientHandler extends ChannelHandlerAdapter {
     }
 
     public void parseBridgeRequest(){
-        ProtocolMessage message = new ProtocolMessage(MessageType.BRIDGE_REQUEST);
-        ArrayList<String[]> bridgeList = new Database().requestBridgeList();
+        ProtocolMessage message = new ProtocolMessage(MessageType.REQUEST_BRIDGE);
+
+        ArrayList<String[]> bridgeList = new ArrayList<>();
+        Iterator it = BridgeBallotServer.bridgeMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            Bridge bridge = (Bridge)pair.getValue();
+            String[] bridge2 = new String[6];
+            bridge2[0] = Integer.toString(bridge.getId());
+            bridge2[1] = bridge.getName();
+            bridge2[2] = bridge.getLocation();
+            bridge2[3] = Double.toString(bridge.getLatitude());
+            bridge2[4] = Double.toString(bridge.getLongitude());
+            bridge2[5] = Boolean.toString(bridge.isOpen());
+
+            bridgeList.add(bridge2);
+        }
         message.add(bridgeList);
 
         client.getChannel().writeAndFlush(message);
+    }
+
+    public void parseWatchListRequest(){
+        ProtocolMessage message = new ProtocolMessage(MessageType.REQUEST_WATCHLIST);
+
+        ArrayList<String[]> bridgeList = new ArrayList<>();
+        for (Object o : client.watchList.entrySet()) {
+            Map.Entry pair = (Map.Entry) o;
+            Bridge bridge = (Bridge) pair.getValue();
+            String[] bridge2 = new String[6];
+            bridge2[0] = Integer.toString(bridge.getId());
+            bridge2[1] = bridge.getName();
+            bridge2[2] = bridge.getLocation();
+            bridge2[3] = Double.toString(bridge.getLatitude());
+            bridge2[4] = Double.toString(bridge.getLongitude());
+            bridge2[5] = Boolean.toString(bridge.isOpen());
+            bridgeList.add(bridge2);
+        }
+        message.add(bridgeList);
+
+        client.getChannel().writeAndFlush(message);
+    }
+    public void parseAddToWatchList(ProtocolMessage message){
+        int bridgeId = (int)message.getMessage().get(1);
+        if(!client.watchList.containsKey(bridgeId)) {
+            new Database().addBridgeToWatchlist(client.getId(), bridgeId);
+            client.watchList.put(bridgeId, BridgeBallotServer.bridgeMap.get(bridgeId));
+        }
+    }
+
+    public void parseRemoveFromWatchList(ProtocolMessage message){
+        int bridgeId = (int)message.getMessage().get(1);
+        if(client.watchList.containsKey(bridgeId)) {
+            new Database().removeBridgeFromWatchlist(client.getId(), bridgeId);
+            client.watchList.remove(bridgeId);
+        }
     }
 }

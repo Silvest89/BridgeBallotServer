@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BridgeBallotServer{
 
     static final int PORT = 8010;
-    public static ConcurrentHashMap<Integer, Bridge> bridgeMap = new ConcurrentHashMap<>();
+    public static HashMap<Integer, Bridge> bridgeMap = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
         System.out.println(HelperTools.getCurrentTimeStamp() + "Bridge Ballot Server Build 20");
@@ -50,10 +50,9 @@ public class BridgeBallotServer{
                         }
                     });
 
+            System.out.println(HelperTools.getCurrentTimeStamp() + "Listening on " + PORT);
             // Bind and start to accept incoming connections.
             b.bind(PORT).sync().channel().closeFuture().sync();
-
-            System.out.println(HelperTools.getCurrentTimeStamp() + "Listening on " + PORT);
 
         } finally {
             bossGroup.shutdownGracefully();
