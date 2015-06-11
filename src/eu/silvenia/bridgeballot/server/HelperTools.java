@@ -1,4 +1,4 @@
-package bridgeballotserver;
+package eu.silvenia.bridgeballot.server;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

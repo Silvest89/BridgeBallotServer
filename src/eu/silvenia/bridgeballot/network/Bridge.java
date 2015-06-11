@@ -1,8 +1,7 @@
-package bridgeballotserver;
+package eu.silvenia.bridgeballot.network;
+
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by Johnnie Ho on 6-6-2015.
