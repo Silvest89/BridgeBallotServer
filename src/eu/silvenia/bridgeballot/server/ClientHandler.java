@@ -40,7 +40,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
         public static final int WATCHLIST_ADD = 12;
         public static final int WATCHLIST_DELETE= 13;
 
-        public static final int BRIDGE_STATUS_UPDATE = 15;
+        public static final int BRIDGE_STATUS_UPDATE = 14;
     }
 
     @Override
@@ -81,6 +81,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
                 }
                 case MessageType.BRIDGE_STATUS_UPDATE:{
                     parseBridgeUpdateStatus(message);
+                    break;
                 }
             }
         }catch (Exception e) {
@@ -188,9 +189,5 @@ public class ClientHandler extends ChannelHandlerAdapter {
             new Database().removeBridgeFromWatchlist(client.getId(), bridgeId);
             client.watchList.remove(bridgeId);
         }
-    }
-
-    public void updateBridgeStatus(){
-
     }
 }
