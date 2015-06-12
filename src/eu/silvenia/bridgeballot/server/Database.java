@@ -56,7 +56,7 @@ public class Database {
                         resultSet.getInt("access_level"),
                         channel);
 
-                preparedStatement = connect.prepareStatement("SELECT * FROM bridge_watchlist WHERE id = ? ");
+                preparedStatement = connect.prepareStatement("SELECT * FROM bridge_watchlist WHERE account_id = ? ");
                 preparedStatement.setInt(1, client.getId());
                 resultSet = preparedStatement.executeQuery();
                 while(resultSet.next()) {
@@ -170,7 +170,7 @@ public class Database {
     public HashMap<Integer, Bridge> requestWatchlist(int userId){
         try {
             HashMap<Integer, Bridge> bridgeMap = new HashMap<>();
-            preparedStatement = connect.prepareStatement("SELECT * FROM bridges WHERE id IN (SELECT ID FROM bridge_watchlist WHERE account_id = ?)");
+            preparedStatement = connect.prepareStatement("SELECT * FROM bridges, bridge_watchlist WHERE bridges.id = bridge_watchlist.bridge_id AND bridge_watchlist.account_id = ?");
             preparedStatement.setInt(1, userId);
             resultSet = preparedStatement.executeQuery();
             while(resultSet.next()){
