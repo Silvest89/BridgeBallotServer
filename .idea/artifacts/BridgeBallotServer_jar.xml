@@ -4,7 +4,7 @@
     <root id="archive" name="BridgeBallotServer.jar">
       <element id="module-output" name="BridgeBallotServer" />
       <element id="extracted-dir" path="$PROJECT_DIR$/store/BridgeBallotServer.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../netty-all-5.0.0.Alpha3-20150610.170146-226.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/netty-all-5.0.0.Alpha3-20150610.170146-226.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

@@ -39,6 +39,8 @@ public class ClientHandler extends ChannelHandlerAdapter {
 
         public static final int WATCHLIST_ADD = 12;
         public static final int WATCHLIST_DELETE= 13;
+
+        public static final int BRIDGE_STATUS_UPDATE = 15;
     }
 
     @Override
@@ -77,11 +79,16 @@ public class ClientHandler extends ChannelHandlerAdapter {
                     parseRemoveFromWatchList(message);
                     break;
                 }
+                case MessageType.BRIDGE_STATUS_UPDATE:{
+                    parseBridgeUpdateStatus(message);
+                }
             }
         }catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
@@ -137,6 +144,14 @@ public class ClientHandler extends ChannelHandlerAdapter {
         client.getChannel().writeAndFlush(message);
     }
 
+    private void parseBridgeUpdateStatus(ProtocolMessage message) {
+        int id = (int) message.getMessage().get(1);
+        boolean status = (boolean) message.getMessage().get(2);
+        BridgeBallotServer.bridgeMap.get(id).setOpen(status);
+
+    }
+
+
     public void parseWatchListRequest(){
         ProtocolMessage message = new ProtocolMessage(MessageType.REQUEST_WATCHLIST);
 
@@ -171,5 +186,9 @@ public class ClientHandler extends ChannelHandlerAdapter {
             new Database().removeBridgeFromWatchlist(client.getId(), bridgeId);
             client.watchList.remove(bridgeId);
         }
+    }
+
+    public void updateBridgeStatus(){
+
     }
 }

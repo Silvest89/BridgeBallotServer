@@ -2,6 +2,7 @@
   <library name="BridgeBallotServer">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/store/BridgeBallotServer.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/netty-all-5.0.0.Alpha3-20150610.170146-226.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
