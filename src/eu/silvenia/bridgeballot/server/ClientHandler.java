@@ -159,6 +159,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
     }
     public void parseAddToWatchList(ProtocolMessage message){
         int bridgeId = (int)message.getMessage().get(1);
+        System.out.println(bridgeId);
         if(!client.watchList.containsKey(bridgeId)) {
             new Database().addBridgeToWatchlist(client.getId(), bridgeId);
             client.watchList.put(bridgeId, BridgeBallotServer.bridgeMap.get(bridgeId));
@@ -167,6 +168,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
 
     public void parseRemoveFromWatchList(ProtocolMessage message){
         int bridgeId = (int)message.getMessage().get(1);
+        System.out.println(bridgeId);
         if(client.watchList.containsKey(bridgeId)) {
             new Database().removeBridgeFromWatchlist(client.getId(), bridgeId);
             client.watchList.remove(bridgeId);
