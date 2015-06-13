@@ -174,12 +174,7 @@ public class Database {
             preparedStatement.setInt(1, userId);
             resultSet = preparedStatement.executeQuery();
             while(resultSet.next()){
-                Bridge bridge = new Bridge(resultSet.getInt("id"),
-                        resultSet.getString("name"),
-                        resultSet.getString("location"),
-                        Double.parseDouble(resultSet.getString("latitude")),
-                        Double.parseDouble(resultSet.getString("longitude")),
-                        false);
+                Bridge bridge = bridgeMap.get(resultSet.getInt("id"));
                 bridgeMap.put(resultSet.getInt("id"), bridge);
             }
         return bridgeMap;

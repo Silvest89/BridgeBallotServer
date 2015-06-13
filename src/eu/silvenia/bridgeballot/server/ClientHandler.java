@@ -112,7 +112,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
         if(client != null) {
             Client.clientList.put(client.getId(), client);
             this.client = client;
-            client.watchList = new Database().requestWatchlist(client.getId());
+            //client.watchList = new Database().requestWatchlist(client.getId());
         }
 
         System.out.println(HelperTools.getCurrentTimeStamp() + "User: " + client.getUserName() + " logged in successfully.");
@@ -157,8 +157,9 @@ public class ClientHandler extends ChannelHandlerAdapter {
         ProtocolMessage message = new ProtocolMessage(MessageType.REQUEST_WATCHLIST);
 
         ArrayList<String[]> bridgeList = new ArrayList<>();
-        for (Object o : client.watchList.entrySet()) {
-            Map.Entry pair = (Map.Entry) o;
+        Iterator it = client.watchList.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
             Bridge bridge = (Bridge) pair.getValue();
             String[] bridge2 = new String[6];
             bridge2[0] = Integer.toString(bridge.getId());
