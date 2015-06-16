@@ -22,7 +22,7 @@ public class BridgeBallotServer{
     public static HashMap<Integer, Bridge> bridgeMap = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
-        System.out.println(HelperTools.getCurrentTimeStamp() + "Bridge Ballot Server Build 20");
+        System.out.println(HelperTools.getCurrentTimeStamp() + "Bridge Ballot Server Build 22");
 
         Database.getDataSource();
         System.out.println(HelperTools.getCurrentTimeStamp() + "MySQL Connection: Done");

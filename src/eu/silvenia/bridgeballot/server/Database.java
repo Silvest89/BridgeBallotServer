@@ -70,7 +70,7 @@ public class Database {
         }
         return null;
     }
-    public int[] validateLogin(String userName, String password, boolean isGooglePlus, String token){
+    public int[] validateLogin(String userName, String password, boolean isGooglePlus){
         try {
             if(!isGooglePlus) {
                 preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE email = ? AND password = ?");
@@ -82,18 +82,6 @@ public class Database {
             }
             resultSet = preparedStatement.executeQuery();
 
-            if(!isGooglePlus) {
-                preparedStatement = connect.prepareStatement("UPDATE account SET token = ? WHERE email = ? AND password = ?");
-                preparedStatement.setString(1, token);
-                preparedStatement.setString(2, userName);
-                preparedStatement.setString(3, password);
-            }else{
-                preparedStatement = connect.prepareStatement("UPDATE account SET token = ? WHERE email = ?");
-                preparedStatement.setString(1, token);
-                preparedStatement.setString(2, userName);
-            }
-            preparedStatement.executeUpdate();
-
             int[] result = new int[2];
 
             if(resultSet.next()) {
@@ -101,7 +89,6 @@ public class Database {
                 result[1] = resultSet.getInt("access_level");
                 return result;
             }
-
 
         } catch (SQLException e){
             e.printStackTrace();

@@ -89,7 +89,11 @@ public class ClientHandler extends ChannelHandlerAdapter {
         }
     }
 
-
+    @Override
+    public void channelInactive (ChannelHandlerContext ctx){
+        client.setChannel(null);
+        Client.clientList.remove(client.getId());
+    }
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
@@ -107,7 +111,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
 
         boolean isGooglePlus = (boolean)message.getMessage().get(2);
 
-        int[] correctLogin = new Database().validateLogin(loginDetails[0], loginDetails[1], isGooglePlus, loginDetails[2]);
+        int[] correctLogin = new Database().validateLogin(loginDetails[0], loginDetails[1], isGooglePlus);
         Client client = new Database().getClient(loginDetails[0], ctx.channel());
         if(client != null) {
             Client.clientList.put(client.getId(), client);
@@ -149,7 +153,6 @@ public class ClientHandler extends ChannelHandlerAdapter {
         int id = (int) message.getMessage().get(1);
         boolean status = (boolean) message.getMessage().get(2);
         BridgeBallotServer.bridgeMap.get(id).setOpen(status);
-
     }
 
 
