@@ -4,7 +4,6 @@ package eu.silvenia.bridgeballot.server;
  * Created by Johnnie Ho on 10-6-2015.
  */
 
-import bridgeballotserver.*;
 import eu.silvenia.bridgeballot.network.Bridge;
 import eu.silvenia.bridgeballot.network.ProtocolMessage;
 import io.netty.channel.ChannelHandlerAdapter;
@@ -15,6 +14,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Handles both client-side and server-side handler depending on which
@@ -82,6 +83,10 @@ public class ClientHandler extends ChannelHandlerAdapter {
                 case MessageType.BRIDGE_STATUS_UPDATE:{
                     parseBridgeUpdateStatus(message);
                     break;
+                }
+                case MessageType.SEND_TOKEN:{
+                    parseGcmToken(message);
+                    break;   
                 }
             }
         }catch (Exception e) {
@@ -153,6 +158,20 @@ public class ClientHandler extends ChannelHandlerAdapter {
         int id = (int) message.getMessage().get(1);
         boolean status = (boolean) message.getMessage().get(2);
         BridgeBallotServer.bridgeMap.get(id).setOpen(status);
+        ArrayList list = new Database().checkWatchListUser(id);  
+        if(list != null){
+            new Thread(new Runnable(){
+
+                @Override
+                public void run() {
+                    try {
+                        new GCMRequest().sendPost(list, BridgeBallotServer.bridgeMap.get(id).getName());
+                    } catch (Exception ex) {
+                        Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }).start();
+        }
     }
 
 
@@ -192,6 +211,13 @@ public class ClientHandler extends ChannelHandlerAdapter {
         if(client.watchList.containsKey(bridgeId)) {
             new Database().removeBridgeFromWatchlist(client.getId(), bridgeId);
             client.watchList.remove(bridgeId);
+        }
+    }
+    public void parseGcmToken(ProtocolMessage message){
+        String token = (String)message.getMessage().get(1);
+        if(token != null && !token.equals("")){
+            client.setGcmToken(token);
+            new Database().updateRegToken(client.getId(), token);
         }
     }
 }

@@ -107,6 +107,22 @@ public class Database {
             e.printStackTrace();
         }
     }
+    
+    public ArrayList checkWatchListUser(int bridgeId){
+        try{
+            preparedStatement = connect.prepareStatement("SELECT token FROM bridge_watchlist b, account a WHERE b.bridge_id = ? AND b.account_id = a.id");
+            preparedStatement.setInt(1, bridgeId);
+            resultSet = preparedStatement.executeQuery();
+            ArrayList<String> list = new ArrayList<>();
+            while(resultSet.next()){
+                list.add(resultSet.getString("token"));
+            } 
+            return list;
+            
+        }catch(SQLException e){
+            
+        }return null;
+    }
 
     public boolean checkUserName(String userName){
         try {
