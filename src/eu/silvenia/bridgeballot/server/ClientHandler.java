@@ -96,8 +96,8 @@ public class ClientHandler extends ChannelHandlerAdapter {
 
     @Override
     public void channelInactive (ChannelHandlerContext ctx){
-        client.setChannel(null);
-        Client.clientList.remove(client.getId());
+        if(client != null)
+            Client.clientList.remove(client.getId());
     }
 
     @Override
@@ -118,14 +118,17 @@ public class ClientHandler extends ChannelHandlerAdapter {
 
         int[] correctLogin = new Database().validateLogin(loginDetails[0], loginDetails[1], isGooglePlus);
         Client client = new Database().getClient(loginDetails[0], ctx.channel());
-        if(client != null) {
-            Client.clientList.put(client.getId(), client);
-            this.client = client;
-            //client.watchList = new Database().requestWatchlist(client.getId());
+
+        if(correctLogin != null) {
+            if (client != null) {
+                Client.clientList.put(client.getId(), client);
+                this.client = client;
+                //client.watchList = new Database().requestWatchlist(client.getId());
+            }
+
+            System.out.println(HelperTools.getCurrentTimeStamp() + "User: " + client.getUserName() + " logged in successfully.");
+
         }
-
-        System.out.println(HelperTools.getCurrentTimeStamp() + "User: " + client.getUserName() + " logged in successfully.");
-
         ProtocolMessage returnMessage = new ProtocolMessage(MessageType.LOGIN);
         returnMessage.add(correctLogin);
         client.getChannel().writeAndFlush(returnMessage);
@@ -165,6 +168,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
                 @Override
                 public void run() {
                     try {
+
                         new GCMRequest().sendPost(list, BridgeBallotServer.bridgeMap.get(id).getName());
                     } catch (Exception ex) {
                         Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);

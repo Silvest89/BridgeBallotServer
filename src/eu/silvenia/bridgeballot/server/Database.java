@@ -1,5 +1,6 @@
 package eu.silvenia.bridgeballot.server;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,8 +11,10 @@ import io.netty.channel.Channel;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import javax.sql.DataSource;
+import java.util.Base64.Encoder;
 
 /**
  * Created by Jesse on 30-5-2015.
@@ -72,14 +75,17 @@ public class Database {
     }
     public int[] validateLogin(String userName, String password, boolean isGooglePlus){
         try {
-            if(!isGooglePlus) {
-                preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE email = ? AND password = ?");
-                preparedStatement.setString(1, userName);
-                preparedStatement.setString(2, password);
-            }else{
-                preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE email = ?");
-                preparedStatement.setString(1, userName);
-            }
+            System.out.println(userName);
+            System.out.println(password);
+            System.out.println(isGooglePlus);
+
+            String newPass = password.replaceAll("\\s", "");
+            System.out.println(newPass);
+
+            preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE email = ? AND password = ?");
+            preparedStatement.setString(1, userName);
+            preparedStatement.setString(2, newPass);
+
             resultSet = preparedStatement.executeQuery();
 
             int[] result = new int[2];
