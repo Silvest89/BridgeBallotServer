@@ -11,10 +11,9 @@ import io.netty.channel.Channel;
 import sun.reflect.generics.tree.ReturnType;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
+import java.util.*;
 import javax.sql.DataSource;
+import javax.xml.crypto.Data;
 import java.util.Base64.Encoder;
 
 /**
@@ -257,6 +256,82 @@ public class Database {
         catch (SQLException e){
             e.printStackTrace();
         }
+
+    }
+
+    public boolean createBridge(ArrayList<String> newBridge) {
+        try {
+            preparedStatement = connect.prepareStatement("INSERT INTO bridges (name, location, latitude, longitude) VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1, newBridge.get(2));
+            preparedStatement.setString(2, newBridge.get(3));
+            preparedStatement.setString(3, newBridge.get(4));
+            preparedStatement.setString(4, newBridge.get(5));
+            preparedStatement.executeUpdate();
+            ResultSet rs = preparedStatement.getGeneratedKeys();
+            if (rs.next()) {
+                int last_inserted_id = rs.getInt(1);
+                Bridge bridge = new Bridge(last_inserted_id,
+                        newBridge.get(2),
+                        newBridge.get(3),
+                        Double.parseDouble(newBridge.get(4)),
+                        Double.parseDouble(newBridge.get(5)),
+                        false);
+                BridgeBallotServer.bridgeMap.put(last_inserted_id, bridge);
+                return true;
+            }
+
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean deleteBridge(ArrayList<String> deleteBridge) {
+        try {
+            preparedStatement = connect.prepareStatement("DELETE FROM bridges WHERE id=?");
+            preparedStatement.setString(1, deleteBridge.get(0));
+            preparedStatement.executeUpdate();
+
+
+            BridgeBallotServer.bridgeMap.values().remove(deleteBridge.get(0));
+            return true;
+
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+        return false;
+
+    }
+
+    public boolean updateBridge(ArrayList<String> updateBridge) {
+        try {
+            preparedStatement = connect.prepareStatement("UPDATE bridges SET name=?, location=?, latitude=?, longitude=? WHERE id=?");
+            preparedStatement.setString(1, updateBridge.get(2));
+            preparedStatement.setString(2, updateBridge.get(3));
+            preparedStatement.setString(3, updateBridge.get(4));
+            preparedStatement.setString(4, updateBridge.get(5));
+            preparedStatement.setString(5, updateBridge.get(1));
+            preparedStatement.executeUpdate();
+
+
+
+            int id = Integer.parseInt(updateBridge.get(1));
+            Bridge bridge = BridgeBallotServer.bridgeMap.get(id);
+            bridge.setName(updateBridge.get(2));
+            bridge.setLocation(updateBridge.get(3));
+            bridge.setLatitude(Double.parseDouble(updateBridge.get(4)));
+            bridge.setLongitude(Double.parseDouble(updateBridge.get(5)));
+            BridgeBallotServer.bridgeMap.put(id, bridge);
+
+            return true;
+
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+        return false;
 
     }
 }

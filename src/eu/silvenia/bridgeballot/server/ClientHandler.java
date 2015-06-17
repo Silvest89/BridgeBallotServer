@@ -43,6 +43,9 @@ public class ClientHandler extends ChannelHandlerAdapter {
         public static final int WATCHLIST_DELETE= 13;
 
         public static final int BRIDGE_STATUS_UPDATE = 14;
+        public static final int BRIDGE_CREATE = 15;
+        public static final int BRIDGE_UPDATE = 16;
+        public static final int BRIDGE_DELETE = 17;
     }
 
     @Override
@@ -101,10 +104,42 @@ public class ClientHandler extends ChannelHandlerAdapter {
                     parseGcmToken(message);
                     break;   
                 }
+                case MessageType.BRIDGE_CREATE: {
+                    parseCreateBridge(message);
+                    break;
+                }
+                case MessageType.BRIDGE_UPDATE: {
+                    parseUpdateBridge(message);
+                    break;
+                }
+                case MessageType.BRIDGE_DELETE: {
+                    parseDeleteBridge(message);
+                    break;
+                }
             }
         }catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void parseUpdateBridge(ProtocolMessage message) {
+        ArrayList<String> updateBridge = (ArrayList) message.getMessage().get(1);
+        System.out.println("RECEIVED UPDATE BRIDGE");
+        new Database().updateBridge(updateBridge);
+    }
+
+    private void parseDeleteBridge(ProtocolMessage message) {
+        ArrayList<String> deleteBridge = (ArrayList) message.getMessage().get(1);
+        System.out.println("RECEIVED DELETE BRIDGE");
+        new Database().deleteBridge(deleteBridge);
+    }
+
+
+    private void parseCreateBridge(ProtocolMessage message) {
+        ArrayList<String> newBridge = (ArrayList) message.getMessage().get(1);
+        System.out.println("RECEIVED NEW BRIDGE");
+        new Database().createBridge(newBridge);
+
     }
 
     @Override
