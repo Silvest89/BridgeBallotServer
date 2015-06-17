@@ -8,6 +8,7 @@ import java.sql.Statement;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import eu.silvenia.bridgeballot.network.Bridge;
 import io.netty.channel.Channel;
+import sun.reflect.generics.tree.ReturnType;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -135,7 +136,7 @@ public class Database {
         }return null;
     }
 
-    public boolean checkUserName(String userName){
+    public boolean userExist(String userName){
         try {
             preparedStatement = connect.prepareStatement("SELECT email FROM account WHERE email = ?");
             preparedStatement.setString(1, userName);
@@ -150,15 +151,22 @@ public class Database {
 
     }
 
-    public void createAccount(String userName, String password){
+    public Integer createAccount(String userName, String password){
         try {
-            preparedStatement = connect.prepareStatement("INSERT INTO account(email, password, access_level) VALUES (?, ?, ?)");
-            preparedStatement.setString(1, userName);
-            preparedStatement.setString(2, password);
-            preparedStatement.setInt(3, 1);
-            preparedStatement.executeUpdate();
+            if (!userExist(userName)) {
+                preparedStatement = connect.prepareStatement("INSERT INTO account(email, password, access_level) VALUES (?, ?, ?)");
+                preparedStatement.setString(1, userName);
+                preparedStatement.setString(2, password);
+                preparedStatement.setInt(3, 1);
+                preparedStatement.executeUpdate();
+                return 0;
+            }
+            else {
+                return 2;
+            }
         } catch (SQLException e){
             e.printStackTrace();
+            return 1;
         }
     }
 

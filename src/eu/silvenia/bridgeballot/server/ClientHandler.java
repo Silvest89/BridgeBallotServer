@@ -9,6 +9,7 @@ import eu.silvenia.bridgeballot.network.ProtocolMessage;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,6 +59,18 @@ public class ClientHandler extends ChannelHandlerAdapter {
             switch ((int)message.getMessage().get(0)) {
                 case MessageType.LOGIN: {
                     parseLogin(message);
+                    break;
+                }
+                case MessageType.CREATE_ACCOUNT:{
+                    parseCreateAccount(ctx, message);
+                    break;
+                }
+                case MessageType.REQUEST_USERS:{
+                    parseRequestUsers(message);
+                    break;
+                }
+                case MessageType.DELETE_USER:{
+                    parseDeleteUser(message);
                     break;
                 }
                 case MessageType.DISCONNECT: {
@@ -133,6 +146,26 @@ public class ClientHandler extends ChannelHandlerAdapter {
         ProtocolMessage returnMessage = new ProtocolMessage(MessageType.LOGIN);
         returnMessage.add(correctLogin);
         clientConnection.getChannel().writeAndFlush(returnMessage);
+    }
+
+    public void parseCreateAccount(ChannelHandlerContext ctx, ProtocolMessage message){
+        String[] accountDetails = (String[]) message.getMessage().get(1);
+
+        Integer result = new Database().createAccount(accountDetails[0], accountDetails[1]);
+        ProtocolMessage returnMessage = new ProtocolMessage(MessageType.CREATE_ACCOUNT);
+        returnMessage.add(result);
+        ctx.writeAndFlush(returnMessage);
+    }
+
+    public void parseRequestUsers(ProtocolMessage message){
+        ArrayList<String> result = new Database().getUsers();
+        ProtocolMessage returnMessage = new ProtocolMessage(MessageType.DELETE_USER);
+        returnMessage.add(result);
+        clientConnection.getChannel().writeAndFlush(returnMessage);
+    }
+
+    public void parseDeleteUser(ProtocolMessage message){
+
     }
 
     public void parseBridgeRequest(){
