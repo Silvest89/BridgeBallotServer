@@ -34,8 +34,8 @@ public class ClientHandler extends ChannelHandlerAdapter {
 
         public static final int CREATE_ACCOUNT = 5;
         public static final int REQUEST_USERS = 6;
-        public static final int DELETE_USER = 7;
-
+        public static final int DELETE_USER = 7;        
+        
         public static final int REQUEST_BRIDGE = 10;
         public static final int REQUEST_WATCHLIST = 11;
 
@@ -46,6 +46,8 @@ public class ClientHandler extends ChannelHandlerAdapter {
         public static final int BRIDGE_CREATE = 15;
         public static final int BRIDGE_UPDATE = 16;
         public static final int BRIDGE_DELETE = 17;
+        
+        public static final int REPUTATION = 18;
     }
 
     @Override
@@ -114,6 +116,10 @@ public class ClientHandler extends ChannelHandlerAdapter {
                 }
                 case MessageType.BRIDGE_DELETE: {
                     parseDeleteBridge(message);
+                    break;
+                }
+                case MessageType.REPUTATION: {
+                    parseReputation(message);
                     break;
                 }
             }
@@ -252,7 +258,6 @@ public class ClientHandler extends ChannelHandlerAdapter {
         }
     }
 
-
     public void parseWatchListRequest(){
         clientConnection.sendWatchList();
     }
@@ -278,6 +283,13 @@ public class ClientHandler extends ChannelHandlerAdapter {
         if(token != null && !token.equals("")){
             clientConnection.setGcmToken(token);
             new Database().updateRegToken(clientConnection.getId(), token);
+        }
+    }
+    public void parseReputation(ProtocolMessage message){
+        int bridgeId = (int)message.getMessage().get(1);
+        ArrayList<String[]> list = new Database().getReputation(bridgeId);
+        if(list != null && !list.isEmpty()){
+            clientConnection.sendReputationList(list);
         }
     }
 }

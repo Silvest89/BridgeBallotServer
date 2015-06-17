@@ -124,7 +124,14 @@ public class Client {
         
         message.add(bridgeId);
         message.add(status);
-        getChannel().writeAndFlush(message);
-        
+        getChannel().writeAndFlush(message);        
     }
+    
+    public void sendReputationList(ArrayList repList){
+        ProtocolMessage message = new ProtocolMessage((ClientHandler.MessageType.REPUTATION));
+        
+        message.add(repList);
+        getChannel().writeAndFlush(message);
+    }
+    
 }
