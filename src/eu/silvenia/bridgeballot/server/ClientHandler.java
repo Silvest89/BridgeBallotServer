@@ -159,13 +159,17 @@ public class ClientHandler extends ChannelHandlerAdapter {
 
     public void parseRequestUsers(ProtocolMessage message){
         ArrayList<String> result = new Database().getUsers();
-        ProtocolMessage returnMessage = new ProtocolMessage(MessageType.DELETE_USER);
+        ProtocolMessage returnMessage = new ProtocolMessage(MessageType.REQUEST_USERS);
         returnMessage.add(result);
         clientConnection.getChannel().writeAndFlush(returnMessage);
     }
 
     public void parseDeleteUser(ProtocolMessage message){
-
+        String userToDelete = (String) message.getMessage().get(1);
+        new Database().deleteUser(userToDelete);
+        ProtocolMessage returnMessage = new ProtocolMessage(MessageType.DELETE_USER);
+        returnMessage.add(0);
+        clientConnection.getChannel().writeAndFlush(returnMessage);
     }
 
     public void parseBridgeRequest(){
