@@ -26,22 +26,20 @@ import org.json.simple.JSONObject;
 public class GCMRequest {
     public void sendPost(ArrayList<String> tokenList, String bridgeName) throws Exception {
         String NotificationMessage = "Bridge: " + bridgeName + " opened!"; 
-        System.out.println(NotificationMessage);
         Message message = new Message.Builder()
-               
-               .collapseKey("message")
-               .timeToLive(3)
-               .delayWhileIdle(true)
+               .collapseKey("bridgeName")
+               .timeToLive(3600)
+               .delayWhileIdle(false)
                .addData("message", NotificationMessage)
                .build();
         
-        
+        String gcmToken = "fTDKl9HLvBc:APA91bH98_C2xrQ5SdCbaSi3IADfBKZq5TWyMjWpvGAT-H8AroyUfYTei6tWClwWM3b8S42Bk8ymq-wTYA7KVJtNs4d4W0BfHXdXqYQQ5goJHMunTFhkOKpyGgMu9jupKtHgxG-00s3s";
         Sender sender = new Sender("AIzaSyA8MiGGJO1v1868Ku1odRXUZRui4Ru8GnE");
         ArrayList<String> tokens = tokenList;
         MulticastResult mcr = sender.send(message, tokens, 0);
         System.out.println("Message Result: "+mcr.toString());
                 
-        //String gcmToken = "fTDKl9HLvBc:APA91bH98_C2xrQ5SdCbaSi3IADfBKZq5TWyMjWpvGAT-H8AroyUfYTei6tWClwWM3b8S42Bk8ymq-wTYA7KVJtNs4d4W0BfHXdXqYQQ5goJHMunTFhkOKpyGgMu9jupKtHgxG-00s3s";
+        
         //tokens.add(gcmToken);
         
         

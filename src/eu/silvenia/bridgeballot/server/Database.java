@@ -116,14 +116,19 @@ public class Database {
     
     public ArrayList checkWatchListUser(int bridgeId){
         try{
-            preparedStatement = connect.prepareStatement("SELECT token FROM bridge_watchlist b, account a WHERE b.bridge_id = ? AND b.account_id = a.id");
+            preparedStatement = connect.prepareStatement("SELECT token, account_id FROM bridge_watchlist b, account a WHERE b.bridge_id = ? AND b.account_id = a.id");
             preparedStatement.setInt(1, bridgeId);
             resultSet = preparedStatement.executeQuery();
-            ArrayList<String> list = new ArrayList<>();
+            ArrayList<ArrayList> aggregated = new ArrayList<>();
+            ArrayList<String> token = new ArrayList<>();
+            ArrayList<Integer> user = new ArrayList<>();
             while(resultSet.next()){
-                list.add(resultSet.getString("token"));
+                token.add(resultSet.getString("token"));
+                user.add(resultSet.getInt("account_id"));
             } 
-            return list;
+            aggregated.add(token);
+            aggregated.add(user);
+            return aggregated;
             
         }catch(SQLException e){
             

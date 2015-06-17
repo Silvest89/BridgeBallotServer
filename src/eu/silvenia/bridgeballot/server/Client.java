@@ -1,9 +1,13 @@
 package eu.silvenia.bridgeballot.server;
 
 import eu.silvenia.bridgeballot.network.Bridge;
+import eu.silvenia.bridgeballot.network.ProtocolMessage;
 import io.netty.channel.Channel;
+import java.util.ArrayList;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by Johnnie Ho on 10-6-2015.
@@ -69,5 +73,58 @@ public class Client {
 
     public void setChannel(Channel channel) {
         this.channel = channel;
+    }
+    public void sendWatchList(){
+        ProtocolMessage message = new ProtocolMessage(ClientHandler.MessageType.REQUEST_WATCHLIST);
+
+        ArrayList<String[]> bridgeList = new ArrayList<>();
+        Iterator it = watchList.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            Bridge bridge = (Bridge) pair.getValue();
+            String[] bridge2 = new String[6];
+            bridge2[0] = Integer.toString(bridge.getId());
+            bridge2[1] = bridge.getName();
+            bridge2[2] = bridge.getLocation();
+            bridge2[3] = Double.toString(bridge.getLatitude());
+            bridge2[4] = Double.toString(bridge.getLongitude());
+            bridge2[5] = Boolean.toString(bridge.isOpen());
+            bridgeList.add(bridge2);
+        }
+        message.add(bridgeList);
+        System.out.println(message);
+        getChannel().writeAndFlush(message);
+    }
+    
+    public void sendBridgeList(){
+        ProtocolMessage message = new ProtocolMessage(ClientHandler.MessageType.REQUEST_BRIDGE);
+
+        ArrayList<String[]> bridgeList = new ArrayList<>();
+        Iterator it = BridgeBallotServer.bridgeMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            Bridge bridge = (Bridge)pair.getValue();
+            String[] bridge2 = new String[6];
+            bridge2[0] = Integer.toString(bridge.getId());
+            bridge2[1] = bridge.getName();
+            bridge2[2] = bridge.getLocation();
+            bridge2[3] = Double.toString(bridge.getLatitude());
+            bridge2[4] = Double.toString(bridge.getLongitude());
+            bridge2[5] = Boolean.toString(bridge.isOpen());
+
+            bridgeList.add(bridge2);
+        }
+        message.add(bridgeList);
+
+        getChannel().writeAndFlush(message);
+    }
+    
+    public void updateBridgeStatus(int bridgeId, boolean status){
+        ProtocolMessage message = new ProtocolMessage(ClientHandler.MessageType.BRIDGE_STATUS_UPDATE);
+        
+        message.add(bridgeId);
+        message.add(status);
+        getChannel().writeAndFlush(message);
+        
     }
 }

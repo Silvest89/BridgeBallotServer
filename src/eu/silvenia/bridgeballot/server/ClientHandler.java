@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 public class ClientHandler extends ChannelHandlerAdapter {
 
     ChannelHandlerContext ctx;
-    Client client;
+    Client clientConnection;
 
     public final static class MessageType {
         public static final int LOGIN = 0;
@@ -96,8 +96,8 @@ public class ClientHandler extends ChannelHandlerAdapter {
 
     @Override
     public void channelInactive (ChannelHandlerContext ctx){
-        if(client != null)
-            Client.clientList.remove(client.getId());
+        if(clientConnection != null)
+            Client.clientList.remove(clientConnection.getId());
     }
 
     @Override
@@ -117,12 +117,13 @@ public class ClientHandler extends ChannelHandlerAdapter {
         boolean isGooglePlus = (boolean)message.getMessage().get(2);
 
         int[] correctLogin = new Database().validateLogin(loginDetails[0], loginDetails[1], isGooglePlus);
-        Client client = new Database().getClient(loginDetails[0], ctx.channel());
+        
 
         if(correctLogin != null) {
+            Client client = new Database().getClient(loginDetails[0], ctx.channel());
             if (client != null) {
                 Client.clientList.put(client.getId(), client);
-                this.client = client;
+                this.clientConnection = client;
                 //client.watchList = new Database().requestWatchlist(client.getId());
             }
 
@@ -131,30 +132,11 @@ public class ClientHandler extends ChannelHandlerAdapter {
         }
         ProtocolMessage returnMessage = new ProtocolMessage(MessageType.LOGIN);
         returnMessage.add(correctLogin);
-        client.getChannel().writeAndFlush(returnMessage);
+        clientConnection.getChannel().writeAndFlush(returnMessage);
     }
 
     public void parseBridgeRequest(){
-        ProtocolMessage message = new ProtocolMessage(MessageType.REQUEST_BRIDGE);
-
-        ArrayList<String[]> bridgeList = new ArrayList<>();
-        Iterator it = BridgeBallotServer.bridgeMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            Bridge bridge = (Bridge)pair.getValue();
-            String[] bridge2 = new String[6];
-            bridge2[0] = Integer.toString(bridge.getId());
-            bridge2[1] = bridge.getName();
-            bridge2[2] = bridge.getLocation();
-            bridge2[3] = Double.toString(bridge.getLatitude());
-            bridge2[4] = Double.toString(bridge.getLongitude());
-            bridge2[5] = Boolean.toString(bridge.isOpen());
-
-            bridgeList.add(bridge2);
-        }
-        message.add(bridgeList);
-
-        client.getChannel().writeAndFlush(message);
+        clientConnection.sendBridgeList();
     }
 
     private void parseBridgeUpdateStatus(ProtocolMessage message) {
@@ -162,14 +144,34 @@ public class ClientHandler extends ChannelHandlerAdapter {
         boolean status = (boolean) message.getMessage().get(2);
         BridgeBallotServer.bridgeMap.get(id).setOpen(status);
         ArrayList list = new Database().checkWatchListUser(id);  
-        if(list != null){
+        if(!list.isEmpty()){
             new Thread(new Runnable(){
 
                 @Override
                 public void run() {
                     try {
+                        ArrayList<Integer> user = (ArrayList) list.get(1);
+                        System.out.println(user);
+                        
+                        for(int i = 0; i < user.size(); i++){   
+                            System.out.print(user.get(i));
+                        Client client = Client.getClientList().get(user.get(i));
+                        
+                        if(client != null){
+                            client.updateBridgeStatus(id, status);
+                        }
+                    }
+                    } catch (Exception ex) {
+                        Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }).start();
+            new Thread(new Runnable(){
 
-                        new GCMRequest().sendPost(list, BridgeBallotServer.bridgeMap.get(id).getName());
+                @Override
+                public void run() {
+                    try {
+                        new GCMRequest().sendPost((ArrayList)list.get(0), BridgeBallotServer.bridgeMap.get(id).getName());
                     } catch (Exception ex) {
                         Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -180,48 +182,30 @@ public class ClientHandler extends ChannelHandlerAdapter {
 
 
     public void parseWatchListRequest(){
-        ProtocolMessage message = new ProtocolMessage(MessageType.REQUEST_WATCHLIST);
-
-        ArrayList<String[]> bridgeList = new ArrayList<>();
-        Iterator it = client.watchList.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-            Bridge bridge = (Bridge) pair.getValue();
-            String[] bridge2 = new String[6];
-            bridge2[0] = Integer.toString(bridge.getId());
-            bridge2[1] = bridge.getName();
-            bridge2[2] = bridge.getLocation();
-            bridge2[3] = Double.toString(bridge.getLatitude());
-            bridge2[4] = Double.toString(bridge.getLongitude());
-            bridge2[5] = Boolean.toString(bridge.isOpen());
-            bridgeList.add(bridge2);
-        }
-        message.add(bridgeList);
-
-        client.getChannel().writeAndFlush(message);
+        clientConnection.sendWatchList();
     }
     public void parseAddToWatchList(ProtocolMessage message){
         int bridgeId = (int)message.getMessage().get(1);
         System.out.println(bridgeId);
-        if(!client.watchList.containsKey(bridgeId)) {
-            new Database().addBridgeToWatchlist(client.getId(), bridgeId);
-            client.watchList.put(bridgeId, BridgeBallotServer.bridgeMap.get(bridgeId));
+        if(!clientConnection.watchList.containsKey(bridgeId)) {
+            new Database().addBridgeToWatchlist(clientConnection.getId(), bridgeId);
+            clientConnection.watchList.put(bridgeId, BridgeBallotServer.bridgeMap.get(bridgeId));
         }
     }
 
     public void parseRemoveFromWatchList(ProtocolMessage message){
         int bridgeId = (int)message.getMessage().get(1);
         System.out.println(bridgeId);
-        if(client.watchList.containsKey(bridgeId)) {
-            new Database().removeBridgeFromWatchlist(client.getId(), bridgeId);
-            client.watchList.remove(bridgeId);
+        if(clientConnection.watchList.containsKey(bridgeId)) {
+            new Database().removeBridgeFromWatchlist(clientConnection.getId(), bridgeId);
+            clientConnection.watchList.remove(bridgeId);
         }
     }
     public void parseGcmToken(ProtocolMessage message){
         String token = (String)message.getMessage().get(1);
         if(token != null && !token.equals("")){
-            client.setGcmToken(token);
-            new Database().updateRegToken(client.getId(), token);
+            clientConnection.setGcmToken(token);
+            new Database().updateRegToken(clientConnection.getId(), token);
         }
     }
 }
