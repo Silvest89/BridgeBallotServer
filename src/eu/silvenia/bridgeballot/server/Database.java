@@ -15,6 +15,8 @@ import java.util.*;
 import javax.sql.DataSource;
 import javax.xml.crypto.Data;
 import java.util.Base64.Encoder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by Jesse on 30-5-2015.
@@ -341,5 +343,28 @@ public class Database {
         }
         return false;
 
+    }
+    
+    public ArrayList getReputation(int bridgeId){
+        try {
+            ArrayList<String[]> reputationList = new ArrayList<>();
+            preparedStatement = connect.prepareStatement("SELECT ur.bridge_id, a.id, a.email, a.reputation, ur.time, ur.status FROM account a, bridge_vote ur WHERE a.id = ur.account_id AND ur.bridge_id = ? ORDER BY ur.time DESC LIMIT 5");
+            preparedStatement.setInt(1, bridgeId);
+            
+            resultSet = preparedStatement.executeQuery(); 
+            while(resultSet.next()){
+                String[] client = new String[6];
+                client[0] = Integer.toString(resultSet.getInt("id"));
+                client[1] = resultSet.getString("email");
+                client[2] = Integer.toString(resultSet.getInt("reputation"));
+                client[3] = Integer.toString(resultSet.getInt("time"));
+                client[4] = Integer.toString(resultSet.getInt("status"));
+                client[5] = Integer.toString(resultSet.getInt("bridge_id"));
+                reputationList.add(client);
+            }return reputationList;
+     
+        } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        }return null;
     }
 }
