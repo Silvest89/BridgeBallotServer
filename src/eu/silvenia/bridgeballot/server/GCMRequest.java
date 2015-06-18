@@ -7,16 +7,8 @@ package eu.silvenia.bridgeballot.server;
 
 import com.google.android.gcm.server.Message;
 import com.google.android.gcm.server.MulticastResult;
-import com.google.android.gcm.server.Result;
 import com.google.android.gcm.server.Sender;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
-import javax.net.ssl.HttpsURLConnection;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 
 /**
