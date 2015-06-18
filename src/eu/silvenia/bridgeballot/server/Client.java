@@ -32,6 +32,8 @@ public class Client {
         this.channel = channel;
         this.reputation = reputation;
     }
+    
+
 
     public static HashMap<Integer, Client> getClientList() {
         return clientList;
@@ -128,11 +130,14 @@ public class Client {
         getChannel().writeAndFlush(message);        
     }
     
-    public void sendReputationList(ArrayList repList){
+    public void sendReputationList(int bridgeId){
+        ArrayList<String[]> list = new Database().getReputation(bridgeId);
+        if(list != null && !list.isEmpty()){
         ProtocolMessage message = new ProtocolMessage((ClientHandler.MessageType.REPUTATION));
         
-        message.add(repList);
+        message.add(list);
         getChannel().writeAndFlush(message);
+        }
     }
 
     public int getReputation() {

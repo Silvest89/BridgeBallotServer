@@ -48,6 +48,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
         public static final int BRIDGE_DELETE = 17;
         
         public static final int REPUTATION = 18;
+        public static final int REPUTATION_CHANGE = 19;
     }
 
     @Override
@@ -122,6 +123,10 @@ public class ClientHandler extends ChannelHandlerAdapter {
                     parseReputation(message);
                     break;
                 }
+                case MessageType.REPUTATION_CHANGE: {
+                    parseReputationUpdate(message);
+                    break;
+                }
             }
         }catch (Exception e) {
             e.printStackTrace();
@@ -142,8 +147,8 @@ public class ClientHandler extends ChannelHandlerAdapter {
     private void parseCreateBridge(ProtocolMessage message) {
         ArrayList<String> newBridge = (ArrayList) message.getMessage().get(1);
         new Database().createBridge(newBridge);
-
     }
+   
 
     @Override
     public void channelInactive (ChannelHandlerContext ctx){
@@ -222,7 +227,23 @@ public class ClientHandler extends ChannelHandlerAdapter {
             new Database().saveClient(clientConnection);
             BridgeBallotServer.sendBridgeUpdate(bridgeId, bridgeStatus);
         }
-
+    }
+    
+    private void parseReputationUpdate(ProtocolMessage message) { 
+        int voteId = (int) message.getMessage().get(1);
+        int userId = (int) message.getMessage().get(2);
+        int targetId = (int) message.getMessage().get(3);
+        int bridgeId = (int) message.getMessage().get(4);
+        
+        if(new Database().saveDislike(voteId, userId)){
+            if(Client.clientList.containsKey(targetId)){
+                Client.clientList.get(targetId).setReputation(Client.clientList.get(targetId).getReputation() - 2) ;
+                new Database().saveClient(Client.clientList.get(targetId));
+            }else{
+                new Database().setReputation(targetId);   
+            } 
+            clientConnection.sendReputationList(bridgeId);
+        }
     }
 
     public void parseWatchListRequest(){
@@ -252,9 +273,6 @@ public class ClientHandler extends ChannelHandlerAdapter {
     }
     public void parseReputation(ProtocolMessage message){
         int bridgeId = (int)message.getMessage().get(1);
-        ArrayList<String[]> list = new Database().getReputation(bridgeId);
-        if(list != null && !list.isEmpty()){
-            clientConnection.sendReputationList(list);
-        }
+            clientConnection.sendReputationList(bridgeId);
     }
 }

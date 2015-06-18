@@ -60,6 +60,7 @@ public class Database {
             e.printStackTrace();
         }
     }
+    
 
     public Client getClient(String userName, Channel channel){
         try {
@@ -335,7 +336,6 @@ public class Database {
             preparedStatement.executeUpdate();
 
 
-
             int id = Integer.parseInt(updateBridge.get(1));
             Bridge bridge = BridgeBallotServer.bridgeMap.get(id);
             bridge.setName(updateBridge.get(2));
@@ -357,23 +357,70 @@ public class Database {
     public ArrayList getReputation(int bridgeId){
         try {
             ArrayList<String[]> reputationList = new ArrayList<>();
-            preparedStatement = connect.prepareStatement("SELECT ur.bridge_id, a.id, a.email, a.reputation, ur.time, ur.status FROM account a, bridge_vote ur WHERE a.id = ur.account_id AND ur.bridge_id = ? ORDER BY ur.time DESC LIMIT 5");
+            preparedStatement = connect.prepareStatement("SELECT ur.id, ur.bridge_id, a.id, a.email, a.reputation, ur.time, ur.status FROM account a, bridge_vote ur WHERE a.id = ur.account_id AND ur.bridge_id = ? ORDER BY ur.time DESC LIMIT 5");
             preparedStatement.setInt(1, bridgeId);
             
             resultSet = preparedStatement.executeQuery(); 
             while(resultSet.next()){
-                String[] client = new String[6];
-                client[0] = Integer.toString(resultSet.getInt("id"));
-                client[1] = resultSet.getString("email");
-                client[2] = Integer.toString(resultSet.getInt("reputation"));
-                client[3] = Integer.toString(resultSet.getInt("time"));
-                client[4] = Integer.toString(resultSet.getInt("status"));
-                client[5] = Integer.toString(resultSet.getInt("bridge_id"));
+                String[] client = new String[7];
+                client[0] = Integer.toString(resultSet.getInt("ur.id"));
+                client[1] = Integer.toString(resultSet.getInt("a.id"));
+                client[2] = resultSet.getString("a.email");
+                client[3] = Integer.toString(resultSet.getInt("a.reputation"));
+                client[4] = Integer.toString(resultSet.getInt("ur.time"));
+                client[5] = Integer.toString(resultSet.getInt("ur.status"));
+                client[6] = Integer.toString(resultSet.getInt("ur.bridge_id"));
+
                 reputationList.add(client);
             }return reputationList;
      
         } catch (SQLException ex) {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
         }return null;
+    }
+    
+    public boolean saveDislike(int voteId, int accountId){
+        try {
+            System.out.println(voteId + " " + accountId);
+            
+            preparedStatement = connect.prepareStatement("SELECT * FROM vote_dislike WHERE vote_id = ? AND account_id = ?");
+            preparedStatement.setInt(1, voteId);
+            preparedStatement.setInt(2, accountId);
+            
+            resultSet = preparedStatement.executeQuery();
+            if(!resultSet.next()){
+            
+            
+            preparedStatement = connect.prepareStatement("INSERT INTO vote_dislike VALUES(?, ?)");
+            
+            preparedStatement.setInt(1, voteId);
+            preparedStatement.setInt(2, accountId);
+            
+            preparedStatement.executeUpdate();
+            return true;
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+    
+    public void setReputation(int targetId){
+        try {
+            preparedStatement = connect.prepareStatement("SELECT reputation FROM account WHERE id = ?");
+            preparedStatement.setInt(1, targetId);
+            resultSet = preparedStatement.executeQuery();
+            if(resultSet.next()){
+                int reputation = resultSet.getInt("reputation");
+                reputation -= 2;
+            preparedStatement = connect.prepareStatement("UPDATE account SET reputation = ? WHERE id = ?");
+            preparedStatement.setInt(1, reputation);
+            preparedStatement.setInt(2, targetId);
+            
+            preparedStatement.executeUpdate();
+                    }
+        } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
