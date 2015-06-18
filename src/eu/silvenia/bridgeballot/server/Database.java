@@ -75,16 +75,24 @@ public class Database {
     }
     public int[] validateLogin(String userName, String password, boolean isGooglePlus){
         try {
+            String newPass = password.replaceAll("\\s", "");
+            if(isGooglePlus) {
+                if(!userExist(userName)){
+                    createAccount(userName, newPass);
+                }
+                preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE email = ?");
+                preparedStatement.setString(1, userName);
+            }
+            else {
+                preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE email = ? AND password = ?");
+                preparedStatement.setString(1, userName);
+                preparedStatement.setString(2, newPass);
+            }
+
             System.out.println(userName);
             System.out.println(password);
             System.out.println(isGooglePlus);
 
-            String newPass = password.replaceAll("\\s", "");
-            System.out.println(newPass);
-
-            preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE email = ? AND password = ?");
-            preparedStatement.setString(1, userName);
-            preparedStatement.setString(2, newPass);
 
             resultSet = preparedStatement.executeQuery();
 
