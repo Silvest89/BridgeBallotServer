@@ -130,20 +130,17 @@ public class ClientHandler extends ChannelHandlerAdapter {
 
     private void parseUpdateBridge(ProtocolMessage message) {
         ArrayList<String> updateBridge = (ArrayList) message.getMessage().get(1);
-        System.out.println("RECEIVED UPDATE BRIDGE");
         new Database().updateBridge(updateBridge);
     }
 
     private void parseDeleteBridge(ProtocolMessage message) {
         ArrayList<String> deleteBridge = (ArrayList) message.getMessage().get(1);
-        System.out.println("RECEIVED DELETE BRIDGE");
         new Database().deleteBridge(deleteBridge);
     }
 
 
     private void parseCreateBridge(ProtocolMessage message) {
         ArrayList<String> newBridge = (ArrayList) message.getMessage().get(1);
-        System.out.println("RECEIVED NEW BRIDGE");
         new Database().createBridge(newBridge);
 
     }
@@ -218,44 +215,14 @@ public class ClientHandler extends ChannelHandlerAdapter {
     }
 
     private void parseBridgeUpdateStatus(ProtocolMessage message) {
-        int id = (int) message.getMessage().get(1);
-        boolean status = (boolean) message.getMessage().get(2);
-        BridgeBallotServer.bridgeMap.get(id).setOpen(status);
-        ArrayList list = new Database().checkWatchListUser(id);  
-        if(!list.isEmpty()){
-            new Thread(new Runnable(){
-
-                @Override
-                public void run() {
-                    try {
-                        ArrayList<Integer> user = (ArrayList) list.get(1);
-                        System.out.println(user);
-                        
-                        for(int i = 0; i < user.size(); i++){   
-                            System.out.print(user.get(i));
-                        Client client = Client.getClientList().get(user.get(i));
-                        
-                        if(client != null){
-                            client.updateBridgeStatus(id, status);
-                        }
-                    }
-                    } catch (Exception ex) {
-                        Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }).start();
-            new Thread(new Runnable(){
-
-                @Override
-                public void run() {
-                    try {
-                        new GCMRequest().sendPost((ArrayList)list.get(0), BridgeBallotServer.bridgeMap.get(id).getName());
-                    } catch (Exception ex) {
-                        Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }).start();
+        int bridgeId = (int) message.getMessage().get(1);
+        boolean bridgeStatus = (boolean) message.getMessage().get(2);
+        if (BridgeBallotServer.bridgeMap.get(bridgeId).setOpen(bridgeStatus)){
+            clientConnection.setReputation(clientConnection.getReputation() + 1);
+            new Database().saveClient(clientConnection);
+            BridgeBallotServer.sendBridgeUpdate(bridgeId, bridgeStatus);
         }
+
     }
 
     public void parseWatchListRequest(){
@@ -263,7 +230,6 @@ public class ClientHandler extends ChannelHandlerAdapter {
     }
     public void parseAddToWatchList(ProtocolMessage message){
         int bridgeId = (int)message.getMessage().get(1);
-        System.out.println(bridgeId);
         if(!clientConnection.watchList.containsKey(bridgeId)) {
             new Database().addBridgeToWatchlist(clientConnection.getId(), bridgeId);
             clientConnection.watchList.put(bridgeId, BridgeBallotServer.bridgeMap.get(bridgeId));
@@ -272,7 +238,6 @@ public class ClientHandler extends ChannelHandlerAdapter {
 
     public void parseRemoveFromWatchList(ProtocolMessage message){
         int bridgeId = (int)message.getMessage().get(1);
-        System.out.println(bridgeId);
         if(clientConnection.watchList.containsKey(bridgeId)) {
             new Database().removeBridgeFromWatchlist(clientConnection.getId(), bridgeId);
             clientConnection.watchList.remove(bridgeId);

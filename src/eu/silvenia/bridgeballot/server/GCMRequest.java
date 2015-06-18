@@ -29,7 +29,6 @@ public class GCMRequest {
         Sender sender = new Sender("AIzaSyA8MiGGJO1v1868Ku1odRXUZRui4Ru8GnE");
         ArrayList<String> tokens = tokenList;
         MulticastResult mcr = sender.send(message, tokens, 0);
-        System.out.println("Message Result: "+mcr.toString());
                 
         
         //tokens.add(gcmToken);

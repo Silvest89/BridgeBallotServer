@@ -1,7 +1,11 @@
 package eu.silvenia.bridgeballot.network;
 
 
+import eu.silvenia.bridgeballot.server.BridgeBallotServer;
+
 import java.io.Serializable;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Johnnie Ho on 6-6-2015.
@@ -69,7 +73,23 @@ public class Bridge implements Serializable {
 
     public boolean isOpen(){ return isOpen; }
 
-    public void setOpen(boolean isOpen) {
+    public synchronized boolean setOpen(boolean isOpen) {
+        if (isOpen && this.isOpen()){
+            return false;
+        }
         this.isOpen = isOpen;
+        if (isOpen){
+            Timer timer = new Timer();
+            timer.schedule(new BridgeTimer(), 15 * 60 * 1000);
+        }
+        return true;
+    }
+
+    public class BridgeTimer extends TimerTask {
+        @Override
+        public void run() {
+            setOpen(false);
+            BridgeBallotServer.sendBridgeUpdate(id, false);
+        }
     }
 }

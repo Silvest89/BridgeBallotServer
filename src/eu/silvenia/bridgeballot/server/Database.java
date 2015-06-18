@@ -47,6 +47,20 @@ public class Database {
         return mysql;
     }
 
+    public synchronized void saveClient(Client client){
+        try{
+            preparedStatement = connect.prepareStatement("UPDATE account SET email = ?, access_level = ?, reputation = ? WHERE id = ?");
+            preparedStatement.setString(1, client.getUserName());
+            preparedStatement.setInt(2, client.getAccessLevel());
+            preparedStatement.setInt(3, client.getReputation());
+            preparedStatement.setInt(4, client.getId());
+            preparedStatement.executeUpdate();
+
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
     public Client getClient(String userName, Channel channel){
         try {
             preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE email = ? ");
@@ -59,7 +73,8 @@ public class Database {
                         resultSet.getString("email"),
                         resultSet.getString("token"),
                         resultSet.getInt("access_level"),
-                        channel);
+                        channel,
+                        resultSet.getInt("reputation"));
 
                 preparedStatement = connect.prepareStatement("SELECT * FROM bridge_watchlist WHERE account_id = ? ");
                 preparedStatement.setInt(1, client.getId());
@@ -90,12 +105,6 @@ public class Database {
                 preparedStatement.setString(1, userName);
                 preparedStatement.setString(2, newPass);
             }
-
-            System.out.println(userName);
-            System.out.println(password);
-            System.out.println(isGooglePlus);
-
-
             resultSet = preparedStatement.executeQuery();
 
             int[] result = new int[2];

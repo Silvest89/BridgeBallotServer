@@ -13,8 +13,11 @@ import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class BridgeBallotServer{
 
@@ -57,6 +60,45 @@ public class BridgeBallotServer{
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
+        }
+    }
+
+    public static void sendBridgeUpdate(int bridgeId, boolean bridgeStatus){
+        ArrayList list = new Database().checkWatchListUser(bridgeId);
+
+        if(!list.isEmpty()){
+            new Thread(new Runnable(){
+
+                @Override
+                public void run() {
+                    try {
+                        ArrayList<Integer> user = (ArrayList) list.get(1);
+                        System.out.println(user);
+
+                        for(int i = 0; i < user.size(); i++){
+                            System.out.print(user.get(i));
+                            Client client = Client.getClientList().get(user.get(i));
+
+                            if(client != null){
+                                client.updateBridgeStatus(bridgeId, bridgeStatus);
+                            }
+                        }
+                    } catch (Exception ex) {
+                        Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }).start();
+            new Thread(new Runnable(){
+
+                @Override
+                public void run() {
+                    try {
+                        new GCMRequest().sendPost((ArrayList)list.get(0), BridgeBallotServer.bridgeMap.get(bridgeId).getName());
+                    } catch (Exception ex) {
+                        Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }).start();
         }
     }
 }

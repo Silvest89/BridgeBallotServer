@@ -20,15 +20,17 @@ public class Client {
     private String gcmToken;
     private int accessLevel;
     private Channel channel;
+    private int reputation;
 
     public HashMap<Integer, Bridge> watchList = new HashMap<>();
 
-    public Client(int id, String userName, String gcmToken, int accessLevel, Channel channel){
+    public Client(int id, String userName, String gcmToken, int accessLevel, Channel channel, int reputation){
         this.id = id;
         this.userName = userName;
         this.gcmToken = gcmToken;
         this.accessLevel = accessLevel;
         this.channel = channel;
+        this.reputation = reputation;
     }
 
     public static HashMap<Integer, Client> getClientList() {
@@ -92,7 +94,6 @@ public class Client {
             bridgeList.add(bridge2);
         }
         message.add(bridgeList);
-        System.out.println(message);
         getChannel().writeAndFlush(message);
     }
     
@@ -133,5 +134,12 @@ public class Client {
         message.add(repList);
         getChannel().writeAndFlush(message);
     }
-    
+
+    public int getReputation() {
+        return reputation;
+    }
+
+    public void setReputation(int reputation) {
+        this.reputation = reputation;
+    }
 }
