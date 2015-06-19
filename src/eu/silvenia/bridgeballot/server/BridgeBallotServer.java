@@ -15,10 +15,13 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
+/**
+ * Initializes the server 
+ */
 public class BridgeBallotServer{
 
     static final int PORT = 8010;
@@ -62,7 +65,12 @@ public class BridgeBallotServer{
             workerGroup.shutdownGracefully();
         }
     }
-
+    /**
+     * Sends the bridgeId and the bridgeStatus to the sender function.
+     * 
+     * @param bridgeId - The id of the bridge
+     * @param bridgeStatus - The status of the bridge
+     */
     public static void sendBridgeUpdate(int bridgeId, boolean bridgeStatus){
         ArrayList list = new Database().checkWatchListUser(bridgeId);
 

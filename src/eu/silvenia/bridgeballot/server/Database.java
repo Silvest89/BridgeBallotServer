@@ -1,6 +1,5 @@
 package eu.silvenia.bridgeballot.server;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,18 +7,17 @@ import java.sql.Statement;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import eu.silvenia.bridgeballot.network.Bridge;
 import io.netty.channel.Channel;
-import sun.reflect.generics.tree.ReturnType;
 
 import java.sql.SQLException;
 import java.util.*;
 import javax.sql.DataSource;
-import javax.xml.crypto.Data;
-import java.util.Base64.Encoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Created by Jesse on 30-5-2015.
+ * 
+ * Handles all the Database Queries.
  */
 public class Database {
 
@@ -38,6 +36,10 @@ public class Database {
         }
     }
 
+    /**
+     * Sets the Database information.
+     * @return 
+     */
     public static DataSource getDataSource(){
         mysql = new MysqlDataSource();
         mysql.setURL("jdbc:mysql://localhost/appflow");
@@ -47,6 +49,11 @@ public class Database {
         return mysql;
     }
 
+    /**
+     * Saves the client received by the ClientHandler.
+     * 
+     * @param client 
+     */
     public synchronized void saveClient(Client client){
         try{
             preparedStatement = connect.prepareStatement("UPDATE account SET email = ?, access_level = ?, reputation = ? WHERE id = ?");
@@ -61,7 +68,13 @@ public class Database {
         }
     }
     
-
+    /**
+     * Gets the client from the database, and sends it back to the Client class.
+     * 
+     * @param userName - The userName received by the ClientHandler.
+     * @param channel 
+     * @return 
+     */
     public Client getClient(String userName, Channel channel){
         try {
             preparedStatement = connect.prepareStatement("SELECT * FROM account WHERE email = ? ");
@@ -91,6 +104,15 @@ public class Database {
         }
         return null;
     }
+    
+    /**
+     * Validates if the info received by the client corresponds with the Database info.
+     * 
+     * @param userName - The useName filled in by the User.
+     * @param password - The hashed password filled in by the User.
+     * @param isGooglePlus - checks if the user used Google Plus to login.
+     * @return 
+     */
     public int[] validateLogin(String userName, String password, boolean isGooglePlus){
         try {
             String newPass = password.replaceAll("\\s", "");
@@ -123,6 +145,12 @@ public class Database {
         return null;
     }
 
+    /**
+     * Applies the correct GCM token to the correct user.
+     * 
+     * @param id - The userId received by the user.
+     * @param token - The token which was automatically sent by the user.
+     */
     public void updateRegToken(int id, String token){
         try {
             preparedStatement = connect.prepareStatement("UPDATE account SET token = ? WHERE id = ?");
@@ -134,6 +162,12 @@ public class Database {
         }
     }
     
+    /**
+     * Checks if the user has a bridge in his WatchList.
+     * 
+     * @param bridgeId - The bridgeId received by the client.
+     * @return 
+     */
     public ArrayList checkWatchListUser(int bridgeId){
         try{
             preparedStatement = connect.prepareStatement("SELECT token, account_id FROM bridge_watchlist b, account a WHERE b.bridge_id = ? AND b.account_id = a.id");
@@ -155,6 +189,12 @@ public class Database {
         }return null;
     }
 
+    /**
+     * Checks if the user already exists in the Database.
+     * 
+     * @param userName - The userName received by the client.
+     * @return 
+     */
     public boolean userExist(String userName){
         try {
             preparedStatement = connect.prepareStatement("SELECT email FROM account WHERE email = ?");
@@ -170,6 +210,13 @@ public class Database {
 
     }
 
+    /**
+     * Creates a new account with the info received by the user.
+     * 
+     * @param userName - The userName received by the user.
+     * @param password - The password received by the user.
+     * @return 
+     */
     public Integer createAccount(String userName, String password){
         try {
             if (!userExist(userName)) {
@@ -189,6 +236,9 @@ public class Database {
         }
     }
 
+    /**
+     * Loads all the bridges from the Database to the server.
+     */
     public void loadBridges(){
         try {
             preparedStatement = connect.prepareStatement("SELECT * FROM bridges");
@@ -208,6 +258,12 @@ public class Database {
         }
     }
 
+    /**
+     * Gets all the WatchList bridges from the user.
+     * 
+     * @param userId - The userId of the user.
+     * @return 
+     */
     public HashMap<Integer, Bridge> requestWatchlist(int userId){
         try {
             HashMap<Integer, Bridge> bridgeMap = new HashMap<>();
@@ -225,6 +281,10 @@ public class Database {
         return null;
     }
 
+    /**
+     * Gets all the users from the Database. 
+     * @return 
+     */
     public ArrayList<String> getUsers(){
         try {
             ArrayList<String> result = new ArrayList<>();
@@ -243,6 +303,11 @@ public class Database {
         return null;
     }
 
+    /**
+     * Deletes the selected user from the Database.
+     * 
+     * @param username - The username to be deleted.
+     */
     public void deleteUser(String username){
         try {
             preparedStatement = connect.prepareStatement("DELETE FROM account WHERE email = ?");
@@ -253,6 +318,12 @@ public class Database {
         }
     }
 
+    /**
+     * Sets the bridge to the users WatchList in the Database.
+     * 
+     * @param userId -  The userId of the user adding the bridge.
+     * @param bridgeId - The id of the bridge to be added to the WatchList.
+     */
     public void addBridgeToWatchlist(int userId, int bridgeId){
         try {
             preparedStatement = connect.prepareStatement("INSERT INTO bridge_watchlist (account_id, bridge_id) VALUES (?, ?)");
@@ -266,6 +337,12 @@ public class Database {
 
     }
 
+    /**
+     * Removes the Bridge from the users WatchList in the Database.
+     * 
+     * @param userId - The userId of the user deleting the bridge.
+     * @param bridgeId - The id of the bridge to be deleted.
+     */
     public void removeBridgeFromWatchlist(int userId, int bridgeId) {
         try {
             preparedStatement = connect.prepareStatement("DELETE FROM bridge_watchlist WHERE account_id = ? AND bridge_id = ?");
@@ -279,6 +356,12 @@ public class Database {
 
     }
 
+    /**
+     * A new bridge is created and inserted into the database.
+     * 
+     * @param newBridge - An ArrayList with all the Bridge info of the new Bridge.
+     * @return 
+     */
     public boolean createBridge(ArrayList<String> newBridge) {
         try {
             preparedStatement = connect.prepareStatement("INSERT INTO bridges (name, location, latitude, longitude) VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
@@ -307,6 +390,13 @@ public class Database {
         return false;
     }
 
+    /**
+     * Returns true if the Bridge deletion from the Database is successful.
+     * 
+     * @param deleteBridge - The ArrayList containing all the info of the Bridge to be deleted.
+     * 
+     * @return 
+     */
     public boolean deleteBridge(ArrayList<String> deleteBridge) {
         try {
             preparedStatement = connect.prepareStatement("DELETE FROM bridges WHERE id=?");
@@ -325,6 +415,12 @@ public class Database {
 
     }
 
+    /**
+     * Updates the bridgeInfo in the Database.
+     * 
+     * @param updateBridge - ArrayList containing the new Bridge info.
+     * @return 
+     */
     public boolean updateBridge(ArrayList<String> updateBridge) {
         try {
             preparedStatement = connect.prepareStatement("UPDATE bridges SET name=?, location=?, latitude=?, longitude=? WHERE id=?");
@@ -354,6 +450,12 @@ public class Database {
 
     }
     
+    /**
+     * Fetches an ArrayList with reputation info from the Database.
+     * 
+     * @param bridgeId - The bridgeId of the request.
+     * @return 
+     */
     public ArrayList getReputation(int bridgeId){
         try {
             ArrayList<String[]> reputationList = new ArrayList<>();
@@ -379,6 +481,14 @@ public class Database {
         }return null;
     }
     
+    
+    /**
+     * If the user Dislikes a vote, it will be stored in the database here.
+     * 
+     * @param voteId - The id of the Vote.
+     * @param accountId - The id of the accountId who voted.
+     * @return 
+     */
     public boolean saveDislike(int voteId, int accountId){
         try {
             System.out.println(voteId + " " + accountId);
@@ -405,6 +515,11 @@ public class Database {
         return false;
     }
     
+    /**
+     * Sets the reputation in the Database of a user.
+     * 
+     * @param targetId - The userId, which needs a change in reputation.
+     */
     public void setReputation(int targetId){
         try {
             preparedStatement = connect.prepareStatement("SELECT reputation FROM account WHERE id = ?");

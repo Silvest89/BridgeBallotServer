@@ -5,6 +5,8 @@ import java.util.Date;
 
 /**
  * Created by Johnnie Ho on 6-6-2015.
+ * 
+ * Contains useful methods for easy access.
  */
 public final class HelperTools {
     public static String getCurrentTimeStamp(){

@@ -4,19 +4,10 @@ package eu.silvenia.bridgeballot.server;
  * Created by Johnnie Ho on 10-6-2015.
  */
 
-import eu.silvenia.bridgeballot.network.Bridge;
 import eu.silvenia.bridgeballot.network.ProtocolMessage;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Handles both client-side and server-side handler depending on which
@@ -58,8 +49,10 @@ public class ClientHandler extends ChannelHandlerAdapter {
     }
 
     @Override
+    /**
+     * Receives objects from the client and sends them to their correct function.
+     */
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        // Echo back the received object to the client.
         ProtocolMessage message = (ProtocolMessage)msg;
         try {
             switch ((int)message.getMessage().get(0)) {
@@ -133,17 +126,31 @@ public class ClientHandler extends ChannelHandlerAdapter {
         }
     }
 
+    /**
+     * Parses the incoming update message and sends it out to the Database.
+     * 
+     * @param message - The message received by the handler.
+     */
     private void parseUpdateBridge(ProtocolMessage message) {
         ArrayList<String> updateBridge = (ArrayList) message.getMessage().get(1);
         new Database().updateBridge(updateBridge);
     }
-
+    
+    /**
+     * Parses the incoming delete message and sends it out to the Database.
+     * 
+     * @param message - The message received by the handler.
+     */
     private void parseDeleteBridge(ProtocolMessage message) {
         ArrayList<String> deleteBridge = (ArrayList) message.getMessage().get(1);
         new Database().deleteBridge(deleteBridge);
     }
 
-
+    /**
+     * Parses the incoming create message and sends it out to the Database.
+     * 
+     * @param message - The message received by the handler.
+     */
     private void parseCreateBridge(ProtocolMessage message) {
         ArrayList<String> newBridge = (ArrayList) message.getMessage().get(1);
         new Database().createBridge(newBridge);
@@ -167,6 +174,12 @@ public class ClientHandler extends ChannelHandlerAdapter {
         ctx.close();
     }
 
+    /**
+     * Parses the incoming login message and send the info to the Database.
+     * 
+     * @param message -  The message received by the handler.
+     * @throws Exception 
+     */
     public void parseLogin(ProtocolMessage message) throws Exception{
         String[] loginDetails = (String[])message.getMessage().get(1);
 
@@ -191,6 +204,12 @@ public class ClientHandler extends ChannelHandlerAdapter {
         clientConnection.getChannel().writeAndFlush(returnMessage);
     }
 
+    /**
+     * Parses the incoming Register message and sends it to the Database.
+     * 
+     * @param ctx
+     * @param message - The message received by the handler.
+     */
     public void parseCreateAccount(ChannelHandlerContext ctx, ProtocolMessage message){
         String[] accountDetails = (String[]) message.getMessage().get(1);
 
@@ -200,6 +219,11 @@ public class ClientHandler extends ChannelHandlerAdapter {
         ctx.writeAndFlush(returnMessage);
     }
 
+    /**
+     * Parses the incoming RequestUsers message and sends it to the Database.
+     * 
+     * @param message - The message received by the handler.
+     */
     public void parseRequestUsers(ProtocolMessage message){
         ArrayList<String> result = new Database().getUsers();
         ProtocolMessage returnMessage = new ProtocolMessage(MessageType.REQUEST_USERS);
@@ -207,6 +231,11 @@ public class ClientHandler extends ChannelHandlerAdapter {
         clientConnection.getChannel().writeAndFlush(returnMessage);
     }
 
+    /**
+     * Parses the incoming DeleteUser message and sends it to the Database.
+     * 
+     * @param message - The message received by the handler.
+     */
     public void parseDeleteUser(ProtocolMessage message){
         String userToDelete = (String) message.getMessage().get(1);
         new Database().deleteUser(userToDelete);
@@ -219,6 +248,11 @@ public class ClientHandler extends ChannelHandlerAdapter {
         clientConnection.sendBridgeList();
     }
 
+    /**
+     * Parses the incoming BridgeUpdateStatus message and sends it to the Database.
+     * 
+     * @param message - The message received by the handler.
+     */
     private void parseBridgeUpdateStatus(ProtocolMessage message) {
         int bridgeId = (int) message.getMessage().get(1);
         boolean bridgeStatus = (boolean) message.getMessage().get(2);
@@ -229,6 +263,11 @@ public class ClientHandler extends ChannelHandlerAdapter {
         }
     }
     
+    /**
+     * Parses the incoming ReputationUpdate message and sends it to the Database.
+     * 
+     * @param message - The message received by the handler.
+     */
     private void parseReputationUpdate(ProtocolMessage message) { 
         int voteId = (int) message.getMessage().get(1);
         int userId = (int) message.getMessage().get(2);
@@ -249,6 +288,12 @@ public class ClientHandler extends ChannelHandlerAdapter {
     public void parseWatchListRequest(){
         clientConnection.sendWatchList();
     }
+    
+    /**
+     * Parses the incoming BridgeUpdateStatus message and sends it to the Database.
+     * 
+     * @param message - The message received by the handler.
+     */
     public void parseAddToWatchList(ProtocolMessage message){
         int bridgeId = (int)message.getMessage().get(1);
         if(!clientConnection.watchList.containsKey(bridgeId)) {
@@ -256,7 +301,12 @@ public class ClientHandler extends ChannelHandlerAdapter {
             clientConnection.watchList.put(bridgeId, BridgeBallotServer.bridgeMap.get(bridgeId));
         }
     }
-
+    
+    /**
+     * Parses the incoming RemoveFromWatchList message and sends it to the Database.
+     * 
+     * @param message - The message received by the handler.
+     */
     public void parseRemoveFromWatchList(ProtocolMessage message){
         int bridgeId = (int)message.getMessage().get(1);
         if(clientConnection.watchList.containsKey(bridgeId)) {
@@ -264,6 +314,12 @@ public class ClientHandler extends ChannelHandlerAdapter {
             clientConnection.watchList.remove(bridgeId);
         }
     }
+    
+    /**
+     * Parses the incoming GcmToken message and sends it to the Database.
+     * 
+     * @param message - The message received by the handler.
+     */
     public void parseGcmToken(ProtocolMessage message){
         String token = (String)message.getMessage().get(1);
         if(token != null && !token.equals("")){
@@ -271,6 +327,12 @@ public class ClientHandler extends ChannelHandlerAdapter {
             new Database().updateRegToken(clientConnection.getId(), token);
         }
     }
+    
+    /**
+     * Parses the incoming Reputation message and sends it to the Database.
+     * 
+     * @param message - The message received by the handler.
+     */
     public void parseReputation(ProtocolMessage message){
         int bridgeId = (int)message.getMessage().get(1);
             clientConnection.sendReputationList(bridgeId);

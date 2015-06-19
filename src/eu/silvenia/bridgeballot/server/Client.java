@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Created by Johnnie Ho on 10-6-2015.
+ * Sends out all the user information to the client. 
  */
 public class Client {
 
@@ -78,6 +78,10 @@ public class Client {
     public void setChannel(Channel channel) {
         this.channel = channel;
     }
+    
+    /**
+     * Sends the WatchList to the client.
+     */
     public void sendWatchList(){
         ProtocolMessage message = new ProtocolMessage(ClientHandler.MessageType.REQUEST_WATCHLIST);
 
@@ -99,6 +103,9 @@ public class Client {
         getChannel().writeAndFlush(message);
     }
     
+    /**
+     * Sends the BridgeList to the client.
+     */
     public void sendBridgeList(){
         ProtocolMessage message = new ProtocolMessage(ClientHandler.MessageType.REQUEST_BRIDGE);
 
@@ -122,6 +129,12 @@ public class Client {
         getChannel().writeAndFlush(message);
     }
     
+    /**
+     * Sends the updated BridgeStatus to the client.
+     * 
+     * @param bridgeId - The id of the bridge
+     * @param status - The status of the bridge.
+     */
     public void updateBridgeStatus(int bridgeId, boolean status){
         ProtocolMessage message = new ProtocolMessage(ClientHandler.MessageType.BRIDGE_STATUS_UPDATE);
         
@@ -130,6 +143,11 @@ public class Client {
         getChannel().writeAndFlush(message);        
     }
     
+    /**
+     * Sends out the reputationList per bridge to the client.
+     * 
+     * @param bridgeId - The id of the bridge.
+     */
     public void sendReputationList(int bridgeId){
         ArrayList<String[]> list = new Database().getReputation(bridgeId);
         if(list != null && !list.isEmpty()){
