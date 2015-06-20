@@ -186,14 +186,12 @@ public class ClientHandler extends ChannelHandlerAdapter {
         boolean isGooglePlus = (boolean)message.getMessage().get(2);
 
         int[] correctLogin = new Database().validateLogin(loginDetails[0], loginDetails[1], isGooglePlus);
-        
 
         if(correctLogin != null) {
             Client client = new Database().getClient(loginDetails[0], ctx.channel());
             if (client != null) {
                 Client.clientList.put(client.getId(), client);
                 this.clientConnection = client;
-                //client.watchList = new Database().requestWatchlist(client.getId());
             }
 
             System.out.println(HelperTools.getCurrentTimeStamp() + "User: " + client.getUserName() + " logged in successfully.");

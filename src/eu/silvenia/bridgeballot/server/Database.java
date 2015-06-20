@@ -353,7 +353,6 @@ public class Database {
         catch (SQLException e){
             e.printStackTrace();
         }
-
     }
 
     /**
@@ -365,24 +364,23 @@ public class Database {
     public boolean createBridge(ArrayList<String> newBridge) {
         try {
             preparedStatement = connect.prepareStatement("INSERT INTO bridges (name, location, latitude, longitude) VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, newBridge.get(2));
-            preparedStatement.setString(2, newBridge.get(3));
-            preparedStatement.setString(3, newBridge.get(4));
-            preparedStatement.setString(4, newBridge.get(5));
+            preparedStatement.setString(1, newBridge.get(1));
+            preparedStatement.setString(2, newBridge.get(2));
+            preparedStatement.setString(3, newBridge.get(3));
+            preparedStatement.setString(4, newBridge.get(4));
             preparedStatement.executeUpdate();
             ResultSet rs = preparedStatement.getGeneratedKeys();
             if (rs.next()) {
                 int last_inserted_id = rs.getInt(1);
                 Bridge bridge = new Bridge(last_inserted_id,
+                        newBridge.get(1),
                         newBridge.get(2),
-                        newBridge.get(3),
+                        Double.parseDouble(newBridge.get(3)),
                         Double.parseDouble(newBridge.get(4)),
-                        Double.parseDouble(newBridge.get(5)),
                         false);
                 BridgeBallotServer.bridgeMap.put(last_inserted_id, bridge);
                 return true;
             }
-
         }
         catch (SQLException e){
             e.printStackTrace();
@@ -400,9 +398,8 @@ public class Database {
     public boolean deleteBridge(ArrayList<String> deleteBridge) {
         try {
             preparedStatement = connect.prepareStatement("DELETE FROM bridges WHERE id=?");
-            preparedStatement.setString(1, deleteBridge.get(0));
+            preparedStatement.setInt(1, Integer.parseInt(deleteBridge.get(0)));
             preparedStatement.executeUpdate();
-
 
             BridgeBallotServer.bridgeMap.values().remove(deleteBridge.get(0));
             return true;
@@ -412,7 +409,6 @@ public class Database {
             e.printStackTrace();
         }
         return false;
-
     }
 
     /**
