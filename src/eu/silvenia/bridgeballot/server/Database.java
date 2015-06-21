@@ -401,7 +401,7 @@ public class Database {
             preparedStatement.setInt(1, Integer.parseInt(deleteBridge.get(0)));
             preparedStatement.executeUpdate();
 
-            BridgeBallotServer.bridgeMap.values().remove(deleteBridge.get(0));
+            BridgeBallotServer.bridgeMap.remove(deleteBridge.get(0));
             return true;
 
         }
@@ -434,7 +434,6 @@ public class Database {
             bridge.setLocation(updateBridge.get(3));
             bridge.setLatitude(Double.parseDouble(updateBridge.get(4)));
             bridge.setLongitude(Double.parseDouble(updateBridge.get(5)));
-            BridgeBallotServer.bridgeMap.put(id, bridge);
 
             return true;
 
