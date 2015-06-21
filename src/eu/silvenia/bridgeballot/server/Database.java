@@ -401,7 +401,7 @@ public class Database {
             preparedStatement.setInt(1, Integer.parseInt(deleteBridge.get(0)));
             preparedStatement.executeUpdate();
 
-            BridgeBallotServer.bridgeMap.remove(deleteBridge.get(0));
+            BridgeBallotServer.bridgeMap.remove(Integer.parseInt(deleteBridge.get(0)));
             return true;
 
         }

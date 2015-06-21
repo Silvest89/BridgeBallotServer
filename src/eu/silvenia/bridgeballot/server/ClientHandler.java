@@ -134,6 +134,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
     private void parseUpdateBridge(ProtocolMessage message) {
         ArrayList<String> updateBridge = (ArrayList) message.getMessage().get(1);
         new Database().updateBridge(updateBridge);
+        clientConnection.sendBridgeList();
     }
     
     /**
@@ -144,6 +145,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
     private void parseDeleteBridge(ProtocolMessage message) {
         ArrayList<String> deleteBridge = (ArrayList) message.getMessage().get(1);
         new Database().deleteBridge(deleteBridge);
+        clientConnection.sendBridgeList();
     }
 
     /**
@@ -154,6 +156,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
     private void parseCreateBridge(ProtocolMessage message) {
         ArrayList<String> newBridge = (ArrayList) message.getMessage().get(1);
         new Database().createBridge(newBridge);
+        clientConnection.sendBridgeList();
     }
    
 
@@ -199,7 +202,7 @@ public class ClientHandler extends ChannelHandlerAdapter {
         }
         ProtocolMessage returnMessage = new ProtocolMessage(MessageType.LOGIN);
         returnMessage.add(correctLogin);
-        clientConnection.getChannel().writeAndFlush(returnMessage);
+        ctx.writeAndFlush(returnMessage);
     }
 
     /**
